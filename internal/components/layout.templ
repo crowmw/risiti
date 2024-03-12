@@ -1,0 +1,26 @@
+package components
+
+templ head(title string) {
+	<head>
+		<title>{ title }</title>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<script src="static/js/htmx.min.js"></script>
+		<link rel="stylesheet" href="static/css/style.css"/>
+	</head>
+}
+
+templ footer() {
+	<footer class="bg-gray-200 p-4">2024 @ crowmw</footer>
+}
+
+templ Layout(route string, title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		@head(title)
+		<body class="flex flex-col h-full">
+			<main class="flex-1" hx-swap="innerHTML" hx-get={ route } hx-trigger="load"></main>
+		</body>
+		@footer()
+	</html>
+}
