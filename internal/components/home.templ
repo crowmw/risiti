@@ -1,5 +1,8 @@
 package components
 
 templ HomeView(msg string) {
-	<h1>{ msg }TEST</h1>
+	<div class="flex flex-col mx-auto">
+		@search()
+		@add()
+	</div>
 }

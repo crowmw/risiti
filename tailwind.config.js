@@ -4,6 +4,9 @@ module.exports = {
     './internal/components/**/*.templ',
   ],
   theme: {
+    container: {
+      center: true
+    },
     extend: {},
   },
   plugins: [],

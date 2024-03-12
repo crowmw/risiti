@@ -26,6 +26,8 @@ func main() {
 
 	r.Get("/", handlers.HomeGetHandler)
 
+	r.Post("/upload", handlers.UploadHandler)
+
 	killSig := make(chan os.Signal, 1)
 
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)

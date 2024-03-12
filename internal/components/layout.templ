@@ -1,8 +1,8 @@
 package components
 
-templ head(title string) {
+templ head() {
 	<head>
-		<title>{ title }</title>
+		<title>risiti</title>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<script src="static/js/htmx.min.js"></script>
@@ -11,16 +11,21 @@ templ head(title string) {
 }
 
 templ footer() {
-	<footer class="bg-gray-200 p-4">2024 @ crowmw</footer>
+	<footer class="text-center text-xs p-4">2024 @ crowmw</footer>
 }
 
-templ Layout(route string, title string) {
+templ header() {
+	<header class="text-center">risiti</header>
+}
+
+templ Layout(route string) {
 	<!DOCTYPE html>
 	<html lang="en">
-		@head(title)
-		<body class="flex flex-col h-full">
-			<main class="flex-1" hx-swap="innerHTML" hx-get={ route } hx-trigger="load"></main>
+		@head()
+		<body>
+			@header()
+			<div class="container mx-auto" hx-swap="innerHTML" hx-get={ route } hx-trigger="load"></div>
+			@footer()
 		</body>
-		@footer()
 	</html>
 }
