@@ -5,8 +5,8 @@ templ head() {
 		<title>risiti</title>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-		<script src="static/js/htmx.min.js"></script>
-		<link rel="stylesheet" href="static/css/style.css"/>
+		<script src="static/js/htmx.min.js" nonce={ ctx.Value("htmxNonce").(string) }></script>
+		<link rel="stylesheet" href="static/css/style.css" nonce={ ctx.Value("twNonce").(string) }/>
 	</head>
 }
 

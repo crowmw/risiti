@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crowmw/risiti/internal/handlers"
+	m "crowmw/risiti/internal/middleware"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -19,7 +20,7 @@ import (
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(middleware.Logger, m.CSPMiddleware)
 
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
