@@ -13,5 +13,5 @@ func NewGetHomeHandler() *GetHomeHandler {
 }
 
 func (h *GetHomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	RenderView(w, r, components.Home())
+	RenderView(w, r, components.Home(), "/")
 }

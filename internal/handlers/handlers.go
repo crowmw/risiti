@@ -16,13 +16,13 @@ func onError(w http.ResponseWriter, err error, msg string, code int) {
 	}
 }
 
-func RenderView(w http.ResponseWriter, r *http.Request, view templ.Component) {
+func RenderView(w http.ResponseWriter, r *http.Request, view templ.Component, layoutPath string) {
 	if r.Header.Get("Hx-Request") == "true" {
 		err := view.Render(r.Context(), w)
 		onError(w, err, "Internal server error!", http.StatusInternalServerError)
 		return
 	}
 
-	err := components.Layout(components.Home()).Render(r.Context(), w)
+	err := components.Layout(layoutPath).Render(r.Context(), w)
 	onError(w, err, "Internal server error", http.StatusInternalServerError)
 }
