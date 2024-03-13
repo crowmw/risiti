@@ -20,6 +20,10 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+const (
+	PORT = ":2137"
+)
+
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	filestore := filestore.NewFileStore()
@@ -27,7 +31,7 @@ func main() {
 	fileserver := http.FileServer(http.Dir("static"))
 	router := chi.NewRouter()
 
-	router.Use(middleware.Logger, m.CSPMiddleware)
+	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware)
 
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 
@@ -39,9 +43,8 @@ func main() {
 
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)
 
-	port := ":2137"
 	srv := &http.Server{
-		Addr:    port,
+		Addr:    PORT,
 		Handler: router,
 	}
 
@@ -56,7 +59,7 @@ func main() {
 		}
 	}()
 
-	logger.Info("Server started", slog.String("port", port))
+	logger.Info("Server started", slog.String("port", PORT))
 	<-killSig
 
 	logger.Info("Shutting down server")

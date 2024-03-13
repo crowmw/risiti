@@ -10,8 +10,8 @@ import (
 
 type FileStore struct{}
 
-func NewFileStore() FileStore {
-	return FileStore{}
+func NewFileStore() *FileStore {
+	return &FileStore{}
 }
 
 func (fs *FileStore) SaveFile(file multipart.File, filename string) error {

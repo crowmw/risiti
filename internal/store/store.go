@@ -17,7 +17,7 @@ type Store struct {
 	db *sql.DB
 }
 
-func NewStore() Store {
+func NewStore() *Store {
 	db, err := getConnection(DB_NAME)
 	if err != nil {
 		log.Fatal("Cannot get Sqlite DB Connection", err)
@@ -27,7 +27,7 @@ func NewStore() Store {
 		log.Fatal("Cannot create migratons", err)
 	}
 
-	return Store{
+	return &Store{
 		db,
 	}
 }

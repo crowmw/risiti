@@ -10,7 +10,7 @@ import (
 	"github.com/crowmw/risiti/internal/components"
 	"github.com/crowmw/risiti/internal/filestore"
 	"github.com/crowmw/risiti/internal/store"
-	"github.com/crowmw/risiti/internal/utils"
+	"github.com/crowmw/risiti/internal/tools"
 )
 
 const (
@@ -18,11 +18,11 @@ const (
 )
 
 type PostSubmitHandler struct {
-	filestore filestore.FileStore
-	store     store.Store
+	filestore *filestore.FileStore
+	store     *store.Store
 }
 
-func NewPostSubmitHandler(filestore filestore.FileStore, store store.Store) *PostSubmitHandler {
+func NewPostSubmitHandler(filestore *filestore.FileStore, store *store.Store) *PostSubmitHandler {
 	return &PostSubmitHandler{
 		filestore: filestore,
 		store:     store,
@@ -50,7 +50,7 @@ func (h *PostSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Save file to disk
 	ext := path.Ext(handler.Filename)
-	slug := utils.CreateSlug(fmt.Sprintf("%s_%s", name, date))
+	slug := tools.CreateSlug(fmt.Sprintf("%s_%s", name, date))
 	filename := fmt.Sprintf("%s%s", slug, ext)
 
 	err = h.filestore.SaveFile(file, filename)
