@@ -62,6 +62,7 @@ func (rr *ReceiptRepo) GetAll() ([]Receipt, error) {
 	receipts := []Receipt{}
 	for result.Next() {
 		result.Scan(&rr.receipt.ID, &rr.receipt.Name, &rr.receipt.Description, &rr.receipt.Filename, &rr.receipt.Date)
+		slog.Info(rr.receipt.Date.String())
 		receipts = append(receipts, rr.receipt)
 	}
 

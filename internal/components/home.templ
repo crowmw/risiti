@@ -3,5 +3,5 @@ package components
 templ Home() {
 	@UploadBtn()
 	@Search()
-	@ReceiptsList()
+	<ul hx-get="/receipts" hx-swap="outerHTML" hx-trigger="load"></ul>
 }

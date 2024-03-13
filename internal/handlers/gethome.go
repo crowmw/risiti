@@ -6,7 +6,8 @@ import (
 	"github.com/crowmw/risiti/internal/components"
 )
 
-type GetHomeHandler struct{}
+type GetHomeHandler struct {
+}
 
 func NewGetHomeHandler() *GetHomeHandler {
 	return &GetHomeHandler{}

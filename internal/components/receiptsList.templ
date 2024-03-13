@@ -1,9 +1,11 @@
 package components
 
-templ ReceiptsList() {
+import "github.com/crowmw/risiti/internal/repo"
+
+templ ReceiptsList(receipts []receiptrepo.Receipt) {
 	<ul class="flex flex-col gap-4">
-		@ReceiptItem("Spodnie", "2024-02-01")
-		@ReceiptItem("Bluzka", "2024-03-01")
-		@ReceiptItem("Buty", "2024-04-05")
+		for _, receipt := range receipts {
+			@ReceiptItem(receipt)
+		}
 	</ul>
 }

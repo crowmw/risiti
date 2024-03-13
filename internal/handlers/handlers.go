@@ -9,7 +9,7 @@ import (
 	"github.com/a-h/templ"
 )
 
-func onError(w http.ResponseWriter, err error, msg string, code int) {
+func OnError(w http.ResponseWriter, err error, msg string, code int) {
 	if err != nil {
 		http.Error(w, msg, code)
 		slog.Error(msg, err)
@@ -19,10 +19,10 @@ func onError(w http.ResponseWriter, err error, msg string, code int) {
 func RenderView(w http.ResponseWriter, r *http.Request, view templ.Component, layoutPath string) {
 	if r.Header.Get("Hx-Request") == "true" {
 		err := view.Render(r.Context(), w)
-		onError(w, err, "Internal server error!", http.StatusInternalServerError)
+		OnError(w, err, "Internal server error!", http.StatusInternalServerError)
 		return
 	}
 
 	err := components.Layout(layoutPath).Render(r.Context(), w)
-	onError(w, err, "Internal server error", http.StatusInternalServerError)
+	OnError(w, err, "Internal server error", http.StatusInternalServerError)
 }

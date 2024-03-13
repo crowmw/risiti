@@ -38,6 +38,7 @@ func main() {
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 
 	router.Get("/", handlers.NewGetHomeHandler().ServeHTTP)
+	router.Get("/receipts", handlers.NewGetReceiptsHandler(receiptRepo).ServeHTTP)
 	router.Get("/upload", handlers.NewGetUploadHandler().ServeHTTP)
 	router.Post("/submit", handlers.NewPostSubmitHandler(filestore, receiptRepo).ServeHTTP)
 
