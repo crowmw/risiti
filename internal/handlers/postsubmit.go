@@ -9,6 +9,7 @@ import (
 
 	"github.com/crowmw/risiti/internal/components"
 	"github.com/crowmw/risiti/internal/filestore"
+	"github.com/crowmw/risiti/internal/store"
 	"github.com/crowmw/risiti/internal/utils"
 )
 
@@ -18,11 +19,13 @@ const (
 
 type PostSubmitHandler struct {
 	filestore filestore.FileStore
+	store     store.Store
 }
 
-func NewPostSubmitHandler(filestore filestore.FileStore) *PostSubmitHandler {
+func NewPostSubmitHandler(filestore filestore.FileStore, store store.Store) *PostSubmitHandler {
 	return &PostSubmitHandler{
 		filestore: filestore,
+		store:     store,
 	}
 }
 

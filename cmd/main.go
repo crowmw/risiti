@@ -11,9 +11,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/crowmw/risiti/internal/filestore/defaultfilestore"
+	"github.com/crowmw/risiti/internal/filestore"
 	"github.com/crowmw/risiti/internal/handlers"
 	m "github.com/crowmw/risiti/internal/middleware"
+	"github.com/crowmw/risiti/internal/store"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -21,7 +22,8 @@ import (
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	filestore := defaultfilestore.NewDefaultFileStore()
+	filestore := filestore.NewFileStore()
+	store := store.NewStore()
 	fileserver := http.FileServer(http.Dir("static"))
 	router := chi.NewRouter()
 
@@ -31,7 +33,7 @@ func main() {
 
 	router.Get("/", handlers.NewGetHomeHandler().ServeHTTP)
 	router.Get("/upload", handlers.NewGetUploadHandler().ServeHTTP)
-	router.Post("/submit", handlers.NewPostSubmitHandler(filestore).ServeHTTP)
+	router.Post("/submit", handlers.NewPostSubmitHandler(filestore, store).ServeHTTP)
 
 	killSig := make(chan os.Signal, 1)
 
