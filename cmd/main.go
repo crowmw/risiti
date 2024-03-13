@@ -13,6 +13,7 @@ import (
 
 	"github.com/crowmw/risiti/internal/handlers"
 	m "github.com/crowmw/risiti/internal/middleware"
+	filestore "github.com/crowmw/risiti/internal/store/filestore"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -20,15 +21,17 @@ import (
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	r := chi.NewRouter()
-	r.Use(middleware.Logger, m.CSPMiddleware)
+	filestore := filestore.NewFileStore()
+	fileserver := http.FileServer(http.Dir("static"))
+	router := chi.NewRouter()
 
-	fs := http.FileServer(http.Dir("static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fs))
+	router.Use(middleware.Logger, m.CSPMiddleware)
 
-	r.Get("/", handlers.HomeGetHandler)
-	r.Get("/upload", handlers.UploadHandler)
-	r.Post("/submit", handlers.SubmitHandler)
+	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
+
+	router.Get("/", handlers.NewGetHomeHandler().ServeHTTP)
+	router.Get("/upload", handlers.NewGetUploadHandler().ServeHTTP)
+	router.Post("/submit", handlers.NewPostSubmitHandler(filestore).ServeHTTP)
 
 	killSig := make(chan os.Signal, 1)
 
@@ -37,7 +40,7 @@ func main() {
 	port := ":2137"
 	srv := &http.Server{
 		Addr:    port,
-		Handler: r,
+		Handler: router,
 	}
 
 	go func() {
