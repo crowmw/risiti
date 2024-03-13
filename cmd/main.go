@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"crowmw/risiti/internal/handlers"
-	m "crowmw/risiti/internal/middleware"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -12,6 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/crowmw/risiti/internal/handlers"
+	m "github.com/crowmw/risiti/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -26,8 +27,8 @@ func main() {
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	r.Get("/", handlers.HomeGetHandler)
-
-	r.Post("/upload", handlers.UploadHandler)
+	r.Get("/upload", handlers.UploadHandler)
+	r.Post("/submit", handlers.SubmitHandler)
 
 	killSig := make(chan os.Signal, 1)
 

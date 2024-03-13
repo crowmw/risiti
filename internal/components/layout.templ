@@ -14,17 +14,15 @@ templ footer() {
 	<footer class="text-center text-xs p-4">2024 @ crowmw</footer>
 }
 
-templ header() {
-	<header class="text-center">risiti</header>
-}
-
 templ Layout(route string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		@head()
 		<body>
-			@header()
-			<div class="container mx-auto" hx-swap="innerHTML" hx-get={ route } hx-trigger="load"></div>
+			@Header()
+			<main class="flex-1 flex flex-col justify-center items-center p-4 gap-4 md:gap-8 md:p-6">
+				<div id="content" class="flex flex-col w-full max-w-sm space-y-4" hx-swap="innerHTML" hx-get={ route } hx-trigger="load"></div>
+			</main>
 			@footer()
 		</body>
 	</html>

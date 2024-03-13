@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"crowmw/risiti/internal/components"
-	"crowmw/risiti/internal/utils"
 	"fmt"
 	"io"
 	"log"
@@ -10,6 +8,9 @@ import (
 	"net/http"
 	"os"
 	"path"
+
+	"github.com/crowmw/risiti/internal/components"
+	"github.com/crowmw/risiti/internal/utils"
 
 	"github.com/a-h/templ"
 )
@@ -37,6 +38,10 @@ func HomeGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
+	RenderView(w, r, components.UploadForm(), "/upload")
+}
+
+func SubmitHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Photo uploaded!")
 	r.ParseMultipartForm(10 << 20) //10MB
 

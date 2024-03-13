@@ -1,4 +1,4 @@
-module crowmw/risiti
+module github.com/crowmw/risiti
 
 go 1.22.1
 
