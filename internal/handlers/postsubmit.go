@@ -9,7 +9,7 @@ import (
 
 	"github.com/crowmw/risiti/internal/components"
 	"github.com/crowmw/risiti/internal/filestore"
-	"github.com/crowmw/risiti/internal/store"
+	receiptrepo "github.com/crowmw/risiti/internal/repo"
 	"github.com/crowmw/risiti/internal/tools"
 )
 
@@ -18,23 +18,23 @@ const (
 )
 
 type PostSubmitHandler struct {
-	filestore *filestore.FileStore
-	store     *store.Store
+	filestore   *filestore.FileStore
+	receiptrepo receiptrepo.IReceiptRepo
 }
 
-func NewPostSubmitHandler(filestore *filestore.FileStore, store *store.Store) *PostSubmitHandler {
+func NewPostSubmitHandler(filestore *filestore.FileStore, receiptrepo receiptrepo.IReceiptRepo) *PostSubmitHandler {
 	return &PostSubmitHandler{
-		filestore: filestore,
-		store:     store,
+		filestore:   filestore,
+		receiptrepo: receiptrepo,
 	}
 }
 
 func (h *PostSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Photo uploaded!")
 	r.ParseMultipartForm(10 << 20) //10MB
 
 	name := r.FormValue("name")
 	dateString := r.FormValue("date")
+	description := r.FormValue("description")
 	date, err := time.Parse(YYYYMMDD, dateString)
 	if err != nil {
 		slog.Error("Cannot parse the date", err)
@@ -44,21 +44,32 @@ func (h *PostSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// File get
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		slog.Error("Retrieving file!", err)
+		slog.Error("Cannot retrieve file from formdata", err)
 		return
 	}
 
 	// Save file to disk
 	ext := path.Ext(handler.Filename)
-	slug := tools.CreateSlug(fmt.Sprintf("%s_%s", name, date))
+	slug := tools.CreateSlug(fmt.Sprintf("%s_%s", name, date.Format(YYYYMMDD)))
 	filename := fmt.Sprintf("%s%s", slug, ext)
 
 	err = h.filestore.SaveFile(file, filename)
 	if err != nil {
-		slog.Error("Saving file!", err)
+		slog.Error("Cannot save file", err)
 		return
 	}
 
-	slog.Info("File Saved!")
+	receipt := receiptrepo.Receipt{
+		Name:        name,
+		Description: description,
+		Date:        date,
+		Filename:    filename,
+	}
+	err = h.receiptrepo.Add(receipt)
+	if err != nil {
+		slog.Error("Cannot add receipt to storage", err)
+		return
+	}
+
 	RenderView(w, r, components.Home(), "/")
 }

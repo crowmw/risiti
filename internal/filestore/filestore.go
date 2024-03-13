@@ -8,6 +8,10 @@ import (
 	"os"
 )
 
+const (
+	RECEIPTS_PATH = "./bin/receipts/"
+)
+
 type FileStore struct{}
 
 func NewFileStore() *FileStore {
@@ -16,7 +20,7 @@ func NewFileStore() *FileStore {
 
 func (fs *FileStore) SaveFile(file multipart.File, filename string) error {
 	defer file.Close()
-	dst, err := os.Create(fmt.Sprintf("./bin/recipes/%s", filename))
+	dst, err := os.Create(fmt.Sprintf("%s%s", RECEIPTS_PATH, filename))
 	if err != nil {
 		slog.Error("Creating file!", err)
 		return err

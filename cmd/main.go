@@ -14,6 +14,7 @@ import (
 	"github.com/crowmw/risiti/internal/filestore"
 	"github.com/crowmw/risiti/internal/handlers"
 	m "github.com/crowmw/risiti/internal/middleware"
+	receiptrepo "github.com/crowmw/risiti/internal/repo"
 	"github.com/crowmw/risiti/internal/store"
 
 	"github.com/go-chi/chi/v5"
@@ -28,6 +29,7 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	filestore := filestore.NewFileStore()
 	store := store.NewStore()
+	receiptRepo := receiptrepo.NewReceiptRepo(receiptrepo.Receipt{}, store)
 	fileserver := http.FileServer(http.Dir("static"))
 	router := chi.NewRouter()
 
@@ -37,7 +39,7 @@ func main() {
 
 	router.Get("/", handlers.NewGetHomeHandler().ServeHTTP)
 	router.Get("/upload", handlers.NewGetUploadHandler().ServeHTTP)
-	router.Post("/submit", handlers.NewPostSubmitHandler(filestore, store).ServeHTTP)
+	router.Post("/submit", handlers.NewPostSubmitHandler(filestore, receiptRepo).ServeHTTP)
 
 	killSig := make(chan os.Signal, 1)
 
