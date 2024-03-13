@@ -1,4 +1,4 @@
-package filestore
+package defaultfilestore
 
 import (
 	"fmt"
@@ -8,17 +8,13 @@ import (
 	"os"
 )
 
-type IFileStore interface {
-	SaveFile(file multipart.File, filename string) error
+type DefaultFileStore struct{}
+
+func NewDefaultFileStore() *DefaultFileStore {
+	return &DefaultFileStore{}
 }
 
-type FileStore struct{}
-
-func NewFileStore() *FileStore {
-	return &FileStore{}
-}
-
-func (fs *FileStore) SaveFile(file multipart.File, filename string) error {
+func (fs *DefaultFileStore) SaveFile(file multipart.File, filename string) error {
 	defer file.Close()
 	dst, err := os.Create(fmt.Sprintf("./bin/recipes/%s", filename))
 	if err != nil {
