@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"log/slog"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -41,8 +40,6 @@ func getConnection(dbName string) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("🔥 failed to connect to the database: %s", err)
 	}
-
-	slog.Info("🚀 Connected Successfully to the Database")
 
 	return db, nil
 }

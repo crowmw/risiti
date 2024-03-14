@@ -26,7 +26,6 @@ const (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	filestore := filestore.NewFileStore()
 	store := store.NewStore()
 	receiptRepo := receiptrepo.NewReceiptRepo(receiptrepo.Receipt{}, store)
@@ -62,10 +61,10 @@ func main() {
 		}
 	}()
 
-	logger.Info("Server started", slog.String("port", PORT))
+	slog.Info("🚀 Server started! Listening on port " + PORT)
 	<-killSig
 
-	logger.Info("Shutting down server")
+	slog.Info("🚨 Shutting down server")
 
 	// Create a context with a timeout for shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -73,9 +72,9 @@ func main() {
 
 	// Attempt to gracefully shut down the server
 	if err := srv.Shutdown(ctx); err != nil {
-		logger.Error("Server shutdown failed", slog.Any("err", err))
+		slog.Error("Server shutdown failed", slog.Any("err", err))
 		os.Exit(1)
 	}
 
-	logger.Info("Server shutdown complete")
+	slog.Info("Server shutdown complete")
 }
