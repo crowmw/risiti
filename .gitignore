@@ -32,3 +32,10 @@ static/css/style.css
 
 # Templ outputs
 internal/components/*_templ.go
+
+# SQLite DB
+risiti.db
+
+# Uploaded receipts
+/bin/receipts/*.png
+/bin/receipts/*.svg
