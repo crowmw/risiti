@@ -15,9 +15,9 @@ const (
 type Receipt struct {
 	ID          int       `json:"id"`
 	Name        string    `json:"name"`
-	Filename    string    `json:"filename"`
-	Date        time.Time `json:"date"`
-	Description string    `json:"string"`
+	Description string    `json:"filename"`
+	Filename    string    `json:"date"`
+	Date        time.Time `json:"string"`
 }
 
 type IReceiptRepo interface {
@@ -38,9 +38,9 @@ func NewReceiptRepo(r Receipt, db *sql.DB) *ReceiptRepo {
 }
 
 func (rr *ReceiptRepo) Add(receipt Receipt) error {
-	stmt := `INSERT INTO receipt(name, description, date, filename) VALUES($1, $2, $3, $4)`
+	stmt := `INSERT INTO receipt(name, description, filename, date) VALUES($1, $2, $3, $4)`
 
-	_, err := rr.db.Exec(stmt, receipt.Name, receipt.Description, receipt.Date.Format(YYYYMMDD), receipt.Filename)
+	_, err := rr.db.Exec(stmt, receipt.Name, receipt.Description, receipt.Filename, receipt.Date.Format(YYYYMMDD))
 	if err != nil {
 		slog.Error("Cannot add new receipt to store", err)
 		return err
@@ -49,7 +49,7 @@ func (rr *ReceiptRepo) Add(receipt Receipt) error {
 }
 
 func (rr *ReceiptRepo) GetAll() ([]Receipt, error) {
-	query := `SELECT r.id, r.name, r.description, r.date, r.filename FROM receipt r`
+	query := `SELECT id, name, description, filename, date FROM receipt`
 
 	result, err := rr.db.Query(query)
 	if err != nil {
@@ -62,7 +62,6 @@ func (rr *ReceiptRepo) GetAll() ([]Receipt, error) {
 	receipts := []Receipt{}
 	for result.Next() {
 		result.Scan(&rr.receipt.ID, &rr.receipt.Name, &rr.receipt.Description, &rr.receipt.Filename, &rr.receipt.Date)
-		slog.Info(rr.receipt.Date.String())
 		receipts = append(receipts, rr.receipt)
 	}
 
