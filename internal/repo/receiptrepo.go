@@ -23,6 +23,7 @@ type Receipt struct {
 type IReceiptRepo interface {
 	Add(r Receipt) error
 	GetAll() ([]Receipt, error)
+	GetByText(text string) ([]Receipt, error)
 }
 
 type ReceiptRepo struct {
@@ -54,6 +55,26 @@ func (rr *ReceiptRepo) GetAll() ([]Receipt, error) {
 	result, err := rr.db.Query(query)
 	if err != nil {
 		slog.Error("Cannot get all receipts from store", err)
+		return nil, err
+	}
+
+	defer result.Close()
+
+	receipts := []Receipt{}
+	for result.Next() {
+		result.Scan(&rr.receipt.ID, &rr.receipt.Name, &rr.receipt.Description, &rr.receipt.Filename, &rr.receipt.Date)
+		receipts = append(receipts, rr.receipt)
+	}
+
+	return receipts, nil
+}
+
+func (rr *ReceiptRepo) GetByText(text string) ([]Receipt, error) {
+	query := "SELECT id, name, description, filename, date FROM receipt WHERE name like '%" + text + "?%' OR description like '%" + text + "%' OR filename like '%" + text + "%' OR date like '%" + text + "%'"
+
+	result, err := rr.db.Query(query)
+	if err != nil {
+		slog.Error("Cannot get receipts matching "+text+" from store", err)
 		return nil, err
 	}
 

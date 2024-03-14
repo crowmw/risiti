@@ -40,6 +40,7 @@ func main() {
 	router.Get("/receipts", handlers.NewGetReceiptsHandler(receiptRepo).ServeHTTP)
 	router.Get("/upload", handlers.NewGetUploadHandler().ServeHTTP)
 	router.Post("/submit", handlers.NewPostSubmitHandler(filestore, receiptRepo).ServeHTTP)
+	router.Post("/search", handlers.NewPostSearchHandler(receiptRepo).ServeHTTP)
 
 	killSig := make(chan os.Signal, 1)
 

@@ -3,7 +3,7 @@ package components
 import "github.com/crowmw/risiti/internal/repo"
 
 templ ReceiptsList(receipts []receiptrepo.Receipt) {
-	<ul class="flex flex-col gap-4">
+	<ul id="receipts-list" class="flex flex-col gap-4">
 		for _, receipt := range receipts {
 			@ReceiptItem(receipt)
 		}
