@@ -29,12 +29,12 @@ func main() {
 	filestore := filestore.NewFileStore()
 	store := store.NewStore()
 	receiptRepo := receiptrepo.NewReceiptRepo(receiptrepo.Receipt{}, store)
-	fileserver := http.FileServer(http.Dir("static"))
+	fileserver := http.FileServer(http.Dir("public"))
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware)
 
-	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
+	router.Handle("/public/*", http.StripPrefix("/public/", fileserver))
 
 	router.Get("/", handlers.NewGetHomeHandler().ServeHTTP)
 	router.Get("/receipts", handlers.NewGetReceiptsHandler(receiptRepo).ServeHTTP)

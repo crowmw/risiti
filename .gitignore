@@ -37,5 +37,5 @@ internal/components/*_templ.go
 risiti.db
 
 # Uploaded receipts
-/bin/receipts/*.png
-/bin/receipts/*.svg
+/data/*.png
+/data/*.svg

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RECEIPTS_PATH = "./bin/receipts/"
+	RECEIPTS_PATH = "./data/"
 )
 
 type FileStore struct{}
