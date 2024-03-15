@@ -17,7 +17,7 @@ templ-watch:
 	templ generate --watch
 
 docker-build:
-	docker build --no-cache -f Dockerfile -t risiti:latest . 
+	docker build --no-cache -f Dockerfile -t crowmw/risiti:latest . 
 
 docker-run:
-	docker run -d -p 2137:2137 -v ${HOME}/data:/data risiti:latest
+	docker run -d -p 2137:2137 -v ${HOME}/data:/data crowmw/risiti:latest
