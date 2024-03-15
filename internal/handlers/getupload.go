@@ -13,5 +13,5 @@ func NewGetUploadHandler() *GetUploadHandler {
 }
 
 func (h *GetUploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	RenderView(w, r, components.UploadForm(), "/upload")
+	RenderView(w, r, components.UploadForm(""), "/upload")
 }

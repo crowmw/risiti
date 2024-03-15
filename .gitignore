@@ -28,7 +28,7 @@ tmp
 bin/main
 
 # Tailwind output
-static/css/style.css
+public/css/style.css
 
 # Templ outputs
 internal/components/*_templ.go

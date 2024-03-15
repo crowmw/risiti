@@ -33,8 +33,17 @@ func (h *PostSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20) //10MB
 
 	name := r.FormValue("name")
-	dateString := r.FormValue("date")
+	if name == "" {
+		RenderView(w, r, components.UploadForm("Name cannot be empty!"), "/upload")
+		return
+	}
+
 	description := r.FormValue("description")
+
+	dateString := r.FormValue("date")
+	if dateString == "" {
+		dateString = time.Now().Format(YYYYMMDD)
+	}
 	date, err := time.Parse(YYYYMMDD, dateString)
 	if err != nil {
 		slog.Error("Cannot parse the date", err)
@@ -44,7 +53,7 @@ func (h *PostSubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// File get
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		slog.Error("Cannot retrieve file from formdata", err)
+		RenderView(w, r, components.UploadForm("File is required!"), "/upload")
 		return
 	}
 
