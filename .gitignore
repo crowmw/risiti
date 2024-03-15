@@ -34,9 +34,6 @@ public/css/style.css
 # Templ outputs
 internal/components/*_templ.go
 
-# SQLite DB
-risiti.db
-
 # Uploaded receipts
 /data
 !/data/.gitkeep

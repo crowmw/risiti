@@ -20,4 +20,4 @@ docker-build:
 	docker build --no-cache -f Dockerfile -t risiti:latest . 
 
 docker-run:
-	docker run -d -p 2137:2137 risiti:latest
+	docker run -d -p 2137:2137 -v ${HOME}/data:/data risiti:latest

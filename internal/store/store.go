@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DB_NAME = "risiti.db"
+	DB_NAME = "./data/risiti.db"
 )
 
 func NewStore() *sql.DB {

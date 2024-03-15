@@ -27,7 +27,7 @@ RUN go build -a -ldflags '-w -extldflags "-static"' -o ./bin/risiti ./cmd/main.g
 
 # Run app
 FROM scratch AS runner
-WORKDIR /bin
+WORKDIR /
 
 # Server binary from builder
 COPY --from=builder /build/bin/risiti ./risiti
@@ -44,4 +44,4 @@ COPY --from=tailwind-builder /build/style.css ./public/css
 EXPOSE 2137
 
 # Run the server
-ENTRYPOINT ["/bin/risiti"]
+ENTRYPOINT ["/risiti"]
