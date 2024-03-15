@@ -7,6 +7,7 @@
 *.dll
 *.so
 *.dylib
+.DS_Store
 
 
 # Test binary, built with `go test -c`
@@ -25,7 +26,7 @@ go.work
 tmp
 
 # Prod build dir
-bin/main
+bin
 
 # Tailwind output
 public/css/style.css
@@ -37,5 +38,5 @@ internal/components/*_templ.go
 risiti.db
 
 # Uploaded receipts
-/data/*.png
-/data/*.svg
+/data
+!/data/.gitkeep
