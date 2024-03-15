@@ -2,8 +2,9 @@
 FROM node:21 as tailwind-builder
 WORKDIR /build
 
-# Import codebase
-COPY . .
+# Import necessary codebase
+COPY /internal/components ./internal/components
+COPY /configs ./configs
 
 # Generate tailwindcss output
 RUN npx tailwindcss -c configs/tailwind.config.js -i configs/input.css -o style.css --minify

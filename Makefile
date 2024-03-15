@@ -17,7 +17,7 @@ templ-watch:
 	templ generate --watch
 
 docker-build:
-	docker build --no-cache --progress=plain -f Dockerfile -t risiti:latest . 
+	docker build --no-cache -f Dockerfile -t risiti:latest . 
 
 docker-run:
 	docker run -d -p 2137:2137 risiti:latest
