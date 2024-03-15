@@ -1,0 +1,7 @@
+package components
+
+templ Home() {
+	@UploadBtn()
+	@Search()
+	<ul hx-get="/receipts" hx-swap="outerHTML" hx-trigger="load"></ul>
+}

@@ -1,0 +1,12 @@
+package components
+
+const (
+	BUTTON_CLASS = "flex items-center cursor-pointer rounded-md border border-gray-200 border-gray-200 bg-neutral-900 text-white px-4 py-2 text-sm font-medium shadow-sm gap-2 transition-colors hover:bg-neutral-700"
+)
+
+templ UploadBtn() {
+	<button class={ BUTTON_CLASS } hx-get="/upload" hx-trigger="click" hx-target="#content" hx-push-url="true" hx-swap="innetHTML transition:true">
+		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
+		<span>Upload Receipt</span>
+	</button>
+}

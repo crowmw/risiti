@@ -7,6 +7,8 @@
 *.dll
 *.so
 *.dylib
+.DS_Store
+
 
 # Test binary, built with `go test -c`
 *.test
@@ -19,3 +21,19 @@
 
 # Go workspace file
 go.work
+
+# Dev build dir
+tmp
+
+# Prod build dir
+bin
+
+# Tailwind output
+public/css/style.css
+
+# Templ outputs
+internal/components/*_templ.go
+
+# Uploaded receipts
+/data
+!/data/.gitkeep
