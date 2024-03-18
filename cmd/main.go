@@ -25,6 +25,7 @@ const (
 
 func main() {
 	fileserver := http.FileServer(http.Dir("static"))
+	dataImagesServer := http.FileServer(http.Dir("data"))
 
 	// Services
 	fs := service.NewFileStorage()
@@ -40,6 +41,7 @@ func main() {
 	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware)
 
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
+	router.Handle("/data/*", http.StripPrefix("/data/", dataImagesServer))
 
 	// Views
 	router.Get("/", basicHandler.GetHome)
