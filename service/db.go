@@ -1,4 +1,4 @@
-package store
+package service
 
 import (
 	"database/sql"
@@ -12,7 +12,7 @@ const (
 	DB_NAME = "./data/risiti.db"
 )
 
-func NewStore() *sql.DB {
+func NewDB() *sql.DB {
 	db, err := getConnection(DB_NAME)
 	if err != nil {
 		log.Fatal("Cannot get Sqlite DB Connection", err)
@@ -30,10 +30,6 @@ func getConnection(dbName string) (*sql.DB, error) {
 		err error
 		db  *sql.DB
 	)
-
-	if db != nil {
-		return db, nil
-	}
 
 	// Init SQLite3 database
 	db, err = sql.Open("sqlite3", dbName)

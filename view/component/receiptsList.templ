@@ -1,8 +1,8 @@
-package components
+package component
 
-import "github.com/crowmw/risiti/internal/repo"
+import "github.com/crowmw/risiti/model"
 
-templ ReceiptsList(receipts []receiptrepo.Receipt) {
+templ ReceiptsList(receipts []model.Receipt) {
 	<ul id="receipts-list" class="flex flex-col gap-4">
 		for _, receipt := range receipts {
 			@ReceiptItem(receipt)

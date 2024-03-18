@@ -3,7 +3,7 @@ FROM node:21 as tailwind-builder
 WORKDIR /build
 
 # Import necessary codebase
-COPY /internal/components ./internal/components
+COPY /view ./view
 COPY /configs ./configs
 
 # Generate tailwindcss output
@@ -32,14 +32,14 @@ WORKDIR /
 # Server binary from builder
 COPY --from=builder /build/bin/risiti ./risiti
 
-# Copy public files
-COPY /public ./public
+# Copy static files
+COPY /static ./static
 
 # Copy data catalog for files
 COPY /data ./data
 
 # Copy built tailwindcss styles
-COPY --from=tailwind-builder /build/style.css ./public/css
+COPY --from=tailwind-builder /build/style.css ./static/css
 
 EXPOSE 2137
 

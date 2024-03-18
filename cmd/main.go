@@ -11,11 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/crowmw/risiti/internal/filestore"
-	"github.com/crowmw/risiti/internal/handlers"
-	m "github.com/crowmw/risiti/internal/middleware"
-	receiptrepo "github.com/crowmw/risiti/internal/repo"
-	"github.com/crowmw/risiti/internal/store"
+	"github.com/crowmw/risiti/handler"
+	m "github.com/crowmw/risiti/middleware"
+	"github.com/crowmw/risiti/service"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -26,21 +24,31 @@ const (
 )
 
 func main() {
-	filestore := filestore.NewFileStore()
-	store := store.NewStore()
-	receiptRepo := receiptrepo.NewReceiptRepo(receiptrepo.Receipt{}, store)
-	fileserver := http.FileServer(http.Dir("public"))
-	router := chi.NewRouter()
+	fileserver := http.FileServer(http.Dir("static"))
 
+	// Services
+	fs := service.NewFileStorage()
+	db := service.NewDB()
+	receiptService := service.NewReceiptService(db)
+
+	// Handlers
+	basicHandler := handler.NewBasicHandler(receiptService)
+	receiptHandler := handler.NewReceiptHandler(receiptService, fs)
+
+	// Routes
+	router := chi.NewRouter()
 	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware)
 
-	router.Handle("/public/*", http.StripPrefix("/public/", fileserver))
+	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 
-	router.Get("/", handlers.NewGetHomeHandler().ServeHTTP)
-	router.Get("/receipts", handlers.NewGetReceiptsHandler(receiptRepo).ServeHTTP)
-	router.Get("/upload", handlers.NewGetUploadHandler().ServeHTTP)
-	router.Post("/submit", handlers.NewPostSubmitHandler(filestore, receiptRepo).ServeHTTP)
-	router.Post("/search", handlers.NewPostSearchHandler(receiptRepo).ServeHTTP)
+	// Views
+	router.Get("/", basicHandler.GetHome)
+	router.Get("/upload", basicHandler.GetUpload)
+
+	// Partials
+	router.Get("/receipts", receiptHandler.GetReceipts)
+	router.Post("/receipt", receiptHandler.PostReceipt)
+	router.Post("/search", receiptHandler.SearchReceipts)
 
 	killSig := make(chan os.Signal, 1)
 

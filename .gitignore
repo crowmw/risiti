@@ -30,10 +30,10 @@ tmp
 bin
 
 # Tailwind output
-public/css/style.css
+static/css/style.css
 
 # Templ outputs
-internal/components/*_templ.go
+view/**/*_templ.go
 
 # Uploaded receipts
 /data

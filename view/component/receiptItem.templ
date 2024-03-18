@@ -1,8 +1,8 @@
-package components
+package component
 
-import "github.com/crowmw/risiti/internal/repo"
+import "github.com/crowmw/risiti/model"
 
-templ ReceiptItem(receipt receiptrepo.Receipt) {
+templ ReceiptItem(receipt model.Receipt) {
 	<li id="{receipt.ID}" class="rounded-lg border bg-card text-card-foreground shadow-sm" data-v0-t="card">
 		<div class="p-6 flex items-center gap-4">
 			<div class="grid gap-1.5">

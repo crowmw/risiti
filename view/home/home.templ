@@ -1,0 +1,9 @@
+package home
+
+import "github.com/crowmw/risiti/view/component"
+
+templ Show() {
+	@component.UploadBtn()
+	@component.Search()
+	<ul hx-get="/receipts" hx-swap="outerHTML" hx-trigger="load"></ul>
+}

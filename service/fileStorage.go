@@ -1,4 +1,4 @@
-package filestore
+package service
 
 import (
 	"fmt"
@@ -12,13 +12,17 @@ const (
 	RECEIPTS_PATH = "./data/"
 )
 
-type FileStore struct{}
-
-func NewFileStore() *FileStore {
-	return &FileStore{}
+type IFileStorage interface {
+	SaveFile(file multipart.File, filename string) error
 }
 
-func (fs *FileStore) SaveFile(file multipart.File, filename string) error {
+type FileStorage struct{}
+
+func NewFileStorage() *FileStorage {
+	return &FileStorage{}
+}
+
+func (fs *FileStorage) SaveFile(file multipart.File, filename string) error {
 	defer file.Close()
 	dst, err := os.Create(fmt.Sprintf("%s%s", RECEIPTS_PATH, filename))
 	if err != nil {

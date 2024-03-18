@@ -1,9 +1,10 @@
-package components
+package uploadForm
 
 import "fmt"
+import "github.com/crowmw/risiti/view/component"
 
-templ UploadForm(errorMessage string) {
-	<form class="rounded-lg border bg-card text-card-foreground shadow-sm w-full max-w-sm" hx-encoding="multipart/form-data" hx-post="/submit" hx-push-url="/" hx-target="#content">
+templ Show(errorMessage string) {
+	<form class="rounded-lg border bg-card text-card-foreground shadow-sm w-full max-w-sm" hx-encoding="multipart/form-data" hx-post="/receipt" hx-push-url="/" hx-target="#content">
 		<div class="flex flex-col space-y-1.5 p-6">
 			<h3 class="text-2xl font-semibold whitespace-nowrap leading-none tracking-tight">Upload receipt</h3>
 			<p class="text-sm text-muted-foreground">Submit a photo of your receipt.</p>
@@ -30,7 +31,7 @@ templ UploadForm(errorMessage string) {
 			</div>
 		</div>
 		<div class="flex items-justify px-6 pt-0 pb-6">
-			<button class={ fmt.Sprint(BUTTON_CLASS, " justify-center flex-1") } type="submit">
+			<button class={ fmt.Sprint(component.BUTTON_CLASS, " justify-center flex-1") } type="submit">
 				Submit
 			</button>
 		</div>
