@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 const (
@@ -28,9 +29,11 @@ func main() {
 	dataImagesServer := http.FileServer(http.Dir("data"))
 
 	// Services
+	jwt := service.NewJWTAuth([]byte("secretKey"))
 	fs := service.NewFileStorage()
 	db := service.NewDB()
 	receiptService := service.NewReceiptService(db)
+	// userService := service.NewUserService(db)
 
 	// Handlers
 	basicHandler := handler.NewBasicHandler(receiptService)
@@ -38,7 +41,7 @@ func main() {
 
 	// Routes
 	router := chi.NewRouter()
-	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware)
+	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware, jwtauth.Verify(jwt.JWTAuth, jwtauth.TokenFromCookie))
 
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 	router.Handle("/data/*", http.StripPrefix("/data/", dataImagesServer))

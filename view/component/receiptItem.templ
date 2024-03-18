@@ -9,7 +9,7 @@ templ ReceiptItem(receipt model.Receipt) {
 			<div class="p-6 flex items-center gap-4">
 				<div class="grid">
 					<h2 class="font-semibold text-sm">{ receipt.Name }</h2>
-					<p class="text-sm text-gray-500">{ receipt.Date.Local().Format("2006-01-02") }</p>
+					<time class="text-sm text-gray-500" datetime={ receipt.Date.Local().Format("2006-01-02") }>{ receipt.Date.Local().Format("2006-01-02") }</time>
 					<span class="text-sx text-gray-300">{ receipt.Description }</span>
 				</div>
 			</div>
