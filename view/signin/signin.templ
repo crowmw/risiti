@@ -1,0 +1,16 @@
+package signin
+
+import "github.com/crowmw/risiti/view/component"
+import "fmt"
+
+templ Show() {
+	@component.Card() {
+		<form class="flex flex-col space-y-4">
+			@component.TextInput("email", "Email", "email")
+			@component.TextInput("password", "Password", "")
+			<div class="pt-6 flex flex-1">
+				<button type="submit" class={ fmt.Sprint(component.BUTTON_CLASS, " justify-center flex-1") }>Signin</button>
+			</div>
+		</form>
+	}
+}

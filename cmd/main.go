@@ -21,7 +21,8 @@ import (
 )
 
 const (
-	PORT = ":2137"
+	PORT       = ":2137"
+	SECRET_KEY = "secretKey"
 )
 
 func main() {
@@ -29,15 +30,16 @@ func main() {
 	dataImagesServer := http.FileServer(http.Dir("data"))
 
 	// Services
-	jwt := service.NewJWTAuth([]byte("secretKey"))
+	jwt := service.NewJWTAuth([]byte(SECRET_KEY))
 	fs := service.NewFileStorage()
 	db := service.NewDB()
 	receiptService := service.NewReceiptService(db)
-	// userService := service.NewUserService(db)
+	userService := service.NewUserService(db)
 
 	// Handlers
 	basicHandler := handler.NewBasicHandler(receiptService)
 	receiptHandler := handler.NewReceiptHandler(receiptService, fs)
+	userHandler := handler.NewUserHandler(userService)
 
 	// Routes
 	router := chi.NewRouter()
@@ -49,6 +51,7 @@ func main() {
 	// Views
 	router.Get("/", basicHandler.GetHome)
 	router.Get("/upload", basicHandler.GetUpload)
+	router.Get("/signin", userHandler.GetSignin)
 
 	// Partials
 	router.Get("/receipts", receiptHandler.GetReceipts)

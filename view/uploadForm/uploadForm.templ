@@ -6,18 +6,16 @@ import "github.com/crowmw/risiti/view/component"
 templ Show(errorMessage string) {
 	@component.Card() {
 		<form hx-encoding="multipart/form-data" hx-post="/receipt" hx-push-url="/" hx-target="#content">
-			<div class="flex flex-col space-y-1.5 p-6">
+			<div class="flex flex-col space-y-1.5">
 				<h3 class="text-2xl font-semibold whitespace-nowrap leading-none tracking-tight">Upload receipt</h3>
 				<p class="text-sm text-muted-foreground">Submit a photo of your receipt.</p>
 			</div>
-			<div class="p-6 space-y-4">
+			<div class="py-6 space-y-4">
 				<div class="space-y-2.5">
 					<label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="file">File</label>
 					<input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="file" name="file" accept="image/*" type="file"/>
 				</div>
-				<div class="space-y-2.5">
-					@component.TextInput("name", "name", "Enter the name")
-				</div>
+				@component.TextInput("name", "name", "Enter the name")
 				<div class="space-y-2.5">
 					<label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="date">Date</label>
 					<input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="date" name="date" type="date"/>
@@ -30,7 +28,7 @@ templ Show(errorMessage string) {
 					{ errorMessage }
 				</div>
 			</div>
-			<div class="flex items-justify px-6 pt-0 pb-6">
+			<div class="flex items-justify pt-0">
 				<button class={ fmt.Sprint(component.BUTTON_CLASS, " justify-center flex-1") } type="submit">
 					Submit
 				</button>
