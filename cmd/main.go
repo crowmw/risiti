@@ -52,11 +52,13 @@ func main() {
 	router.Get("/", basicHandler.GetHome)
 	router.Get("/upload", basicHandler.GetUpload)
 	router.Get("/signin", userHandler.GetSignin)
+	router.Get("/signup", userHandler.GetSignup)
 
 	// Partials
 	router.Get("/receipts", receiptHandler.GetReceipts)
 	router.Post("/receipt", receiptHandler.PostReceipt)
 	router.Post("/search", receiptHandler.SearchReceipts)
+	router.Post("/user", userHandler.PostUser)
 
 	killSig := make(chan os.Signal, 1)
 

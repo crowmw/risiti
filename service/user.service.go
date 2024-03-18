@@ -9,6 +9,7 @@ import (
 
 type IUserService interface {
 	Create(user model.User) error
+	CheckEmail(email string) (bool, error)
 }
 
 type UserService struct {
@@ -34,12 +35,12 @@ func (s *UserService) Create(user model.User) error {
 	return err
 }
 
-func (s *UserService) CheckEmail(email string) (model.User, error) {
+func (s *UserService) CheckEmail(email string) (bool, error) {
 	query := `SELECT * FROM user WHERE email=$1`
 
 	stmt, err := s.DB.Prepare(query)
 	if err != nil {
-		return model.User{}, nil
+		return false, nil
 	}
 
 	defer stmt.Close()
@@ -52,8 +53,12 @@ func (s *UserService) CheckEmail(email string) (model.User, error) {
 	)
 
 	if err != nil {
-		return model.User{}, err
+		if err != sql.ErrNoRows {
+			return false, err
+		}
+
+		return false, nil
 	}
 
-	return user, nil
+	return true, nil
 }
