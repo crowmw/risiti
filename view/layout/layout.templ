@@ -1,6 +1,7 @@
 package layout
 
 import "github.com/crowmw/risiti/view/component"
+import "fmt"
 
 templ head() {
 	<head>
@@ -24,12 +25,12 @@ templ footer() {
 	<footer class="text-center text-xs"><small>2024 @ crowmw</small></footer>
 }
 
-templ Show(route string) {
+templ Show(route string, email interface{}) {
 	<!DOCTYPE html>
 	<html lang="en">
 		@head()
 		<body>
-			@component.Header()
+			@header()
 			<main class="flex-1 flex flex-col justify-center items-center p-4 gap-4 md:gap-8 md:p-6">
 				<div id="content" class="flex flex-col w-full max-w-md space-y-4" hx-swap="innerHTML transition:true" hx-get={ route } hx-trigger="load"></div>
 			</main>
@@ -49,4 +50,24 @@ templ NoHeader(route string) {
 			@footer()
 		</body>
 	</html>
+}
+
+templ header() {
+	<header class="flex items-center justify-center w-full h-14 px-4 border-b bg-gray-100/40">
+		<div class="flex flex-1 max-w-md justify-between">
+			<div class="flex items-center gap-2 hover:cursor-pointer" hx-get="/" hx-push-url="true" hx-target="#content">
+				@component.Logo()
+				<span class="font-semibold">risiti</span>
+			</div>
+			<div hx-get="/email" hx-swap="outerHTML" hx-trigger="load"></div>
+		</div>
+	</header>
+}
+
+templ UserButton(email interface{}) {
+	if email != nil {
+		<span class="text-sm">{ fmt.Sprint(email) }</span>
+	} else {
+		<button hx-get="/signin" hx-push-url="true" hx-target="#content" class="text-sm hover:underline">Sign In</button>
+	}
 }

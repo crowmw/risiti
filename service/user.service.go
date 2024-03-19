@@ -8,8 +8,8 @@ import (
 )
 
 type IUserService interface {
-	Create(user model.User) error
-	CheckEmail(email string) (bool, error)
+	Create(user model.User) (model.User, error)
+	Read(email string) (model.User, error)
 }
 
 type UserService struct {
@@ -22,25 +22,40 @@ func NewUserService(db *sql.DB) *UserService {
 	}
 }
 
-func (s *UserService) Create(user model.User) error {
+func (s *UserService) Create(user model.User) (model.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return model.User{}, err
 	}
 
-	stmt := `INSERT INTO user(email, password) VALUES($1, $2)`
+	query := `INSERT INTO user(email, password) VALUES($1, $2) RETURNING *`
 
-	_, err = s.DB.Exec(stmt, user.Email, hashedPassword)
+	stmt, err := s.DB.Prepare(query)
+	if err != nil {
+		return model.User{}, err
+	}
 
-	return err
+	defer stmt.Close()
+
+	newUser := model.User{}
+	err = stmt.QueryRow(user.Email, string(hashedPassword)).Scan(
+		&newUser.ID,
+		&newUser.Email,
+		&newUser.Password,
+	)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return newUser, nil
 }
 
-func (s *UserService) CheckEmail(email string) (bool, error) {
+func (s *UserService) Read(email string) (model.User, error) {
 	query := `SELECT * FROM user WHERE email=$1`
 
 	stmt, err := s.DB.Prepare(query)
 	if err != nil {
-		return false, nil
+		return model.User{}, nil
 	}
 
 	defer stmt.Close()
@@ -53,12 +68,8 @@ func (s *UserService) CheckEmail(email string) (bool, error) {
 	)
 
 	if err != nil {
-		if err != sql.ErrNoRows {
-			return false, err
-		}
-
-		return false, nil
+		return model.User{}, err
 	}
 
-	return true, nil
+	return user, nil
 }

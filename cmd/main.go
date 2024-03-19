@@ -30,7 +30,7 @@ func main() {
 	dataImagesServer := http.FileServer(http.Dir("data"))
 
 	// Services
-	jwt := service.NewJWTAuth([]byte(SECRET_KEY))
+	jwt := service.NewAuthService([]byte(SECRET_KEY))
 	fs := service.NewFileStorage()
 	db := service.NewDB()
 	receiptService := service.NewReceiptService(db)
@@ -39,26 +39,34 @@ func main() {
 	// Handlers
 	basicHandler := handler.NewBasicHandler(receiptService)
 	receiptHandler := handler.NewReceiptHandler(receiptService, fs)
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, jwt)
 
 	// Routes
 	router := chi.NewRouter()
-	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware, jwtauth.Verify(jwt.JWTAuth, jwtauth.TokenFromCookie))
+	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware)
 
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
-	router.Handle("/data/*", http.StripPrefix("/data/", dataImagesServer))
 
 	// Views
 	router.Get("/", basicHandler.GetHome)
-	router.Get("/upload", basicHandler.GetUpload)
 	router.Get("/signin", userHandler.GetSignin)
 	router.Get("/signup", userHandler.GetSignup)
+	router.Get("/signout", userHandler.GetSignout)
+	router.Get("/email", userHandler.GetEmail)
+
+	// Protected routes
+	router.Group(func(r chi.Router) {
+		r.Use(jwtauth.Verifier(jwt.JWTAuth), m.Authenticator(jwt.JWTAuth))
+		r.Handle("/data/*", http.StripPrefix("/data/", dataImagesServer))
+		r.Get("/upload", basicHandler.GetUpload)
+	})
 
 	// Partials
 	router.Get("/receipts", receiptHandler.GetReceipts)
 	router.Post("/receipt", receiptHandler.PostReceipt)
 	router.Post("/search", receiptHandler.SearchReceipts)
 	router.Post("/user", userHandler.PostUser)
+	router.Post("/signin", userHandler.PostSignin)
 
 	killSig := make(chan os.Signal, 1)
 

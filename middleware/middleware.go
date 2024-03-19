@@ -6,6 +6,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+
+	"github.com/crowmw/risiti/handler"
+	"github.com/crowmw/risiti/view/signin"
+	"github.com/go-chi/jwtauth/v5"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
 func generateRandomString(length int) string {
@@ -37,4 +42,26 @@ func CSPMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func Authenticator(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		hfn := func(w http.ResponseWriter, r *http.Request) {
+			token, claims, err := jwtauth.FromContext(r.Context())
+
+			if err != nil {
+				handler.RenderView(w, r, signin.Show("", ""), "/signin")
+				return
+			}
+
+			if token == nil || jwt.Validate(token) != nil {
+				handler.RenderView(w, r, signin.Show(fmt.Sprint(claims["email"]), ""), "/signin")
+				return
+			}
+
+			// Token is authenticated, pass it through
+			next.ServeHTTP(w, r)
+		}
+		return http.HandlerFunc(hfn)
+	}
 }

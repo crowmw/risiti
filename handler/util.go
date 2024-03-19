@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/crowmw/risiti/view/layout"
+	"github.com/go-chi/jwtauth/v5"
 
 	"github.com/a-h/templ"
 )
@@ -25,7 +26,8 @@ func RenderView(w http.ResponseWriter, r *http.Request, view templ.Component, la
 		return
 	}
 
-	err := layout.Show(layoutPath).Render(r.Context(), w)
+	_, claims, _ := jwtauth.FromContext(r.Context())
+	err := layout.Show(layoutPath, claims["email"]).Render(r.Context(), w)
 	OnError(w, err, "Internal server error", http.StatusInternalServerError)
 }
 

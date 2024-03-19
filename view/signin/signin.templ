@@ -3,12 +3,15 @@ package signin
 import "github.com/crowmw/risiti/view/component"
 import "fmt"
 
-templ Show() {
+templ Show(email string, errorMessage string) {
 	<h2 class="text-2xl font-semibold whitespace-nowrap leading-none tracking-tight text-center pt-9">Sign in to risiti</h2>
 	@component.Card() {
-		<form class="flex flex-col space-y-4">
-			@component.TextInput("email", "Email", "email", "", "")
+		<form class="flex flex-col space-y-4" hx-post="/signin" hx-target="#content">
+			@component.TextInput("email", "Email", "email", "", email)
 			@component.TextInput("password", "Password", "password", "", "")
+			<div id="#error-message" class="text-sm text-red-500">
+				{ errorMessage }
+			</div>
 			<div class="pt-6 flex flex-1">
 				<button type="submit" class={ fmt.Sprint(component.BUTTON_CLASS, " justify-center flex-1") }>Signin</button>
 			</div>
