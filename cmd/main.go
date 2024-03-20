@@ -37,7 +37,7 @@ func main() {
 	userService := service.NewUserService(db)
 
 	// Handlers
-	basicHandler := handler.NewBasicHandler(receiptService)
+	basicHandler := handler.NewBasicHandler(receiptService, userService)
 	receiptHandler := handler.NewReceiptHandler(receiptService, fs)
 	userHandler := handler.NewUserHandler(userService, jwt)
 
@@ -48,17 +48,17 @@ func main() {
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 
 	// Views
-	router.Get("/", basicHandler.GetHome)
+
 	router.Get("/signin", userHandler.GetSignin)
 	router.Get("/signup", userHandler.GetSignup)
 	router.Get("/signout", userHandler.GetSignout)
-	router.Get("/email", userHandler.GetEmail)
 
 	// Protected routes
 	router.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(jwt.JWTAuth), m.Authenticator(jwt.JWTAuth))
 		r.Handle("/data/*", http.StripPrefix("/data/", dataImagesServer))
 		r.Get("/upload", basicHandler.GetUpload)
+		r.Get("/", basicHandler.GetHome)
 	})
 
 	// Partials

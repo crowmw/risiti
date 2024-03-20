@@ -10,6 +10,7 @@ import (
 type IUserService interface {
 	Create(user model.User) (model.User, error)
 	Read(email string) (model.User, error)
+	AnyExists() (bool, error)
 }
 
 type UserService struct {
@@ -72,4 +73,23 @@ func (s *UserService) Read(email string) (model.User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *UserService) AnyExists() (bool, error) {
+	query := `SELECT EXISTS (SELECT 1 FROM user) AS isEmpty`
+
+	stmt, err := s.DB.Prepare(query)
+	if err != nil {
+		return false, nil
+	}
+
+	defer stmt.Close()
+
+	var isEmpty bool
+	err = stmt.QueryRow().Scan(&isEmpty)
+	if err != nil {
+		return false, err
+	}
+
+	return isEmpty, nil
 }

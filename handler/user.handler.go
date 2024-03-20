@@ -10,10 +10,8 @@ import (
 	"github.com/crowmw/risiti/model"
 	"github.com/crowmw/risiti/service"
 	"github.com/crowmw/risiti/view/home"
-	"github.com/crowmw/risiti/view/layout"
 	"github.com/crowmw/risiti/view/signin"
 	"github.com/crowmw/risiti/view/signup"
-	"github.com/go-chi/jwtauth/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -74,10 +72,9 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 		slog.Error(fmt.Sprint(err))
 		return
 	}
-
 	http.SetCookie(w, &cookie)
 
-	RenderView(w, r, home.Show(), "/")
+	w.Header().Add("HX-Redirect", "/")
 }
 
 func (h *UserHandler) PostSignin(w http.ResponseWriter, r *http.Request) {
@@ -107,12 +104,7 @@ func (h *UserHandler) PostSignin(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookie)
 
-	RenderView(w, r, home.Show(), "/")
-}
-
-func (h *UserHandler) GetEmail(w http.ResponseWriter, r *http.Request) {
-	_, claims, _ := jwtauth.FromContext(r.Context())
-	RenderView(w, r, layout.UserButton(claims["email"]), "/")
+	w.Header().Add("HX-Redirect", "/")
 }
 
 func (h *UserHandler) GetSignout(w http.ResponseWriter, r *http.Request) {

@@ -30,7 +30,9 @@ templ Show(route string, email interface{}) {
 	<html lang="en">
 		@head()
 		<body>
-			@header()
+			@header() {
+				@userButton(email)
+			}
 			<main class="flex-1 flex flex-col justify-center items-center p-4 gap-4 md:gap-8 md:p-6">
 				<div id="content" class="flex flex-col w-full max-w-md space-y-4" hx-swap="innerHTML transition:true" hx-get={ route } hx-trigger="load"></div>
 			</main>
@@ -59,12 +61,12 @@ templ header() {
 				@component.Logo()
 				<span class="font-semibold">risiti</span>
 			</div>
-			<div hx-get="/email" hx-swap="outerHTML" hx-trigger="load"></div>
+			{ children... }
 		</div>
 	</header>
 }
 
-templ UserButton(email interface{}) {
+templ userButton(email interface{}) {
 	if email != nil {
 		<span class="text-sm">{ fmt.Sprint(email) }</span>
 	} else {
