@@ -43,12 +43,11 @@ func main() {
 
 	// Routes
 	router := chi.NewRouter()
-	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware)
+	router.Use(middleware.Logger, middleware.Recoverer, m.CORS, m.CSPMiddleware)
 
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 
 	// Views
-
 	router.Get("/signin", userHandler.GetSignin)
 	router.Get("/signup", userHandler.GetSignup)
 	router.Get("/signout", userHandler.GetSignout)

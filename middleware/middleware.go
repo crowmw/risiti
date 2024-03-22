@@ -9,6 +9,7 @@ import (
 
 	"github.com/crowmw/risiti/handler"
 	"github.com/crowmw/risiti/view/signin"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
@@ -43,6 +44,17 @@ func CSPMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
+var CORS = cors.Handler(cors.Options{
+	// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+	AllowedOrigins: []string{"https://*", "http://*"},
+	// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+	AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+	ExposedHeaders:   []string{"Link"},
+	AllowCredentials: false,
+	MaxAge:           300, // Maximum value not ignored by any of major browsers
+})
 
 func Authenticator(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

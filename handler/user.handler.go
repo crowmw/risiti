@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/crowmw/risiti/model"
+	"github.com/crowmw/risiti/sanitize"
 	"github.com/crowmw/risiti/service"
 	"github.com/crowmw/risiti/view/home"
 	"github.com/crowmw/risiti/view/signin"
@@ -36,8 +37,16 @@ func (h *UserHandler) GetSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
-	password := r.FormValue("password")
+	email, err := sanitize.SanitizeHTML(r.FormValue("email"))
+	if err != nil {
+		OnError(w, err, "This kind of email is not allowed.", http.StatusBadRequest)
+		return
+	}
+	password, err := sanitize.SanitizeHTML(r.FormValue("password"))
+	if err != nil {
+		OnError(w, err, "This kind of password is not allowed.", http.StatusBadRequest)
+		return
+	}
 	passwordConfirm := r.FormValue("confirm")
 
 	// Check passwords is the same
@@ -47,7 +56,7 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check user is already exists
-	_, err := h.UserService.Read(email)
+	_, err = h.UserService.Read(email)
 	if err != sql.ErrNoRows {
 		RenderView(w, r, signup.Show(email, "User "+email+" already exists. Try signin."), "/signup")
 		return
@@ -78,7 +87,11 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) PostSignin(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
+	email, err := sanitize.SanitizeHTML(r.FormValue("email"))
+	if err != nil {
+		OnError(w, err, "Invalid email address", http.StatusBadRequest)
+		return
+	}
 	password := r.FormValue("password")
 
 	// Check user is already exists

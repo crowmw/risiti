@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/crowmw/risiti/model"
+	"github.com/crowmw/risiti/sanitize"
 	"github.com/crowmw/risiti/service"
 	"github.com/crowmw/risiti/view/component"
 	"github.com/crowmw/risiti/view/home"
@@ -35,7 +36,11 @@ func (h *ReceiptHandler) GetReceipts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ReceiptHandler) SearchReceipts(w http.ResponseWriter, r *http.Request) {
-	text := r.FormValue("search")
+	text, err := sanitize.SanitizeHTML(r.FormValue("search"))
+	if err != nil {
+		OnError(w, err, "Search text is invalid!", http.StatusBadRequest)
+		return
+	}
 
 	receipts, err := h.ReceiptService.ReadByText(text)
 	if err != nil {
@@ -47,15 +52,28 @@ func (h *ReceiptHandler) SearchReceipts(w http.ResponseWriter, r *http.Request) 
 func (h *ReceiptHandler) PostReceipt(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20) //10MB
 
-	name := r.FormValue("name")
+	name, err := sanitize.SanitizeHTML(r.FormValue("name"))
 	if name == "" {
 		RenderView(w, r, uploadForm.Show("Name cannot be empty!"), "/upload")
 		return
 	}
+	if err != nil {
+		OnError(w, err, "Name is invalid!", http.StatusBadRequest)
+		return
+	}
 
-	description := r.FormValue("description")
+	description, err := sanitize.SanitizeHTML(r.FormValue("description"))
+	if err != nil {
+		OnError(w, err, "Description is invalid!", http.StatusBadRequest)
+		return
+	}
 
-	dateString := r.FormValue("date")
+	dateString, err := sanitize.SanitizeHTML(r.FormValue("date"))
+	if err != nil {
+		OnError(w, err, "Date is invalid!", http.StatusBadRequest)
+		return
+	}
+
 	if dateString == "" {
 		dateString = time.Now().Format(service.YYYYMMDD)
 	}
