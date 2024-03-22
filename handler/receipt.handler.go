@@ -1,18 +1,20 @@
 package handler
 
 import (
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/crowmw/risiti/model"
-	"github.com/crowmw/risiti/sanitize"
 	"github.com/crowmw/risiti/service"
 	"github.com/crowmw/risiti/view/component"
-	"github.com/crowmw/risiti/view/home"
 	"github.com/crowmw/risiti/view/uploadForm"
+	"github.com/microcosm-cc/bluemonday"
+	"gopkg.in/validator.v2"
 )
 
 type ReceiptHandler struct {
@@ -36,11 +38,9 @@ func (h *ReceiptHandler) GetReceipts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ReceiptHandler) SearchReceipts(w http.ResponseWriter, r *http.Request) {
-	text, err := sanitize.SanitizeHTML(r.FormValue("search"))
-	if err != nil {
-		OnError(w, err, "Search text is invalid!", http.StatusBadRequest)
-		return
-	}
+	// sanitize
+	s := bluemonday.UGCPolicy()
+	text := s.Sanitize(r.FormValue("search"))
 
 	receipts, err := h.ReceiptService.ReadByText(text)
 	if err != nil {
@@ -52,28 +52,11 @@ func (h *ReceiptHandler) SearchReceipts(w http.ResponseWriter, r *http.Request) 
 func (h *ReceiptHandler) PostReceipt(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20) //10MB
 
-	name, err := sanitize.SanitizeHTML(r.FormValue("name"))
-	if name == "" {
-		RenderView(w, r, uploadForm.Show("Name cannot be empty!"), "/upload")
-		return
-	}
-	if err != nil {
-		OnError(w, err, "Name is invalid!", http.StatusBadRequest)
-		return
-	}
+	// sanitize
+	s := bluemonday.UGCPolicy()
+	name, description, dateString := s.Sanitize(strings.TrimSpace(r.FormValue("name"))), s.Sanitize(strings.TrimSpace(r.FormValue("description"))), s.Sanitize(strings.TrimSpace(r.FormValue("date")))
 
-	description, err := sanitize.SanitizeHTML(r.FormValue("description"))
-	if err != nil {
-		OnError(w, err, "Description is invalid!", http.StatusBadRequest)
-		return
-	}
-
-	dateString, err := sanitize.SanitizeHTML(r.FormValue("date"))
-	if err != nil {
-		OnError(w, err, "Date is invalid!", http.StatusBadRequest)
-		return
-	}
-
+	// parse date
 	if dateString == "" {
 		dateString = time.Now().Format(service.YYYYMMDD)
 	}
@@ -90,28 +73,42 @@ func (h *ReceiptHandler) PostReceipt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Save file to disk
+	// create filename
 	ext := path.Ext(handler.Filename)
 	slug := CreateSlug(fmt.Sprintf("%s_%s", name, date.Format(service.YYYYMMDD)))
 	filename := fmt.Sprintf("%s%s", slug, ext)
 
-	err = h.FileStorage.SaveFile(file, filename)
-	if err != nil {
-		slog.Error("Cannot save file", err)
-		return
-	}
-
+	// validate data
 	receipt := model.Receipt{
 		Name:        name,
 		Description: description,
 		Date:        date,
 		Filename:    filename,
 	}
+	if err := validator.Validate(receipt); err != nil {
+		RenderView(w, r, uploadForm.Show(fmt.Sprint(err)), "/upload")
+		return
+	}
+
+	// name uniqnes check
+	if _, err = h.ReceiptService.ReadByName(receipt.Name); err != sql.ErrNoRows {
+		RenderView(w, r, uploadForm.Show("Name is already taken"), "/upload")
+		return
+	}
+
+	// save file to filestorage
+	err = h.FileStorage.SaveFile(file, filename)
+	if err != nil {
+		slog.Error("Cannot save file", err)
+		return
+	}
+
+	// create receipt in db
 	_, err = h.ReceiptService.Create(receipt)
 	if err != nil {
 		slog.Error("Cannot add receipt to storage", err)
 		return
 	}
 
-	RenderView(w, r, home.Show(), "/")
+	r.Header.Add("HX-Redirect", "/")
 }

@@ -15,6 +15,7 @@ type IReceiptService interface {
 	Create(receipt model.Receipt) (model.Receipt, error)
 	ReadAll() ([]model.Receipt, error)
 	ReadByText(text string) ([]model.Receipt, error)
+	ReadByName(name string) (model.Receipt, error)
 }
 
 type ReceiptService struct {
@@ -28,7 +29,6 @@ func NewReceiptService(db *sql.DB) *ReceiptService {
 }
 
 func (s *ReceiptService) Create(receipt model.Receipt) (model.Receipt, error) {
-	//TODO SANITIZE AND VALIDATE
 	stmt := `INSERT INTO receipt(name, description, filename, date) VALUES($1, $2, $3, $4)`
 
 	_, err := s.DB.Exec(stmt, receipt.Name, receipt.Description, receipt.Filename, receipt.Date.Format(YYYYMMDD))
@@ -61,6 +61,19 @@ func (s *ReceiptService) ReadAll() ([]model.Receipt, error) {
 	}
 
 	return receipts, nil
+}
+
+func (s *ReceiptService) ReadByName(name string) (model.Receipt, error) {
+	query := "SELECT id, name, description, filename, date FROM receipt WHERE name = '" + name + "'"
+
+	receipt := model.Receipt{}
+	err := s.DB.QueryRow(query).Scan(&receipt.ID, &receipt.Name, &receipt.Description, &receipt.Filename, &receipt.Date)
+	if err != nil {
+		slog.Error("Cannot get receipts matching "+name+" from store", err)
+		return model.Receipt{}, err
+	}
+
+	return receipt, nil
 }
 
 func (s *ReceiptService) ReadByText(text string) ([]model.Receipt, error) {

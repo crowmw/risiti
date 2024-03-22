@@ -2,7 +2,7 @@ build:
 	make tailwind-build && make templ-generate && go build -o ./bin/$(APP_NAME) ./cmd/$(APP_NAME)/main.go
 
 dev:
-	make tailwind-build && make templ-generate && go run cmd/main.go
+	air
 
 tailwind-build:
 	npx tailwindcss -c ./configs/tailwind.config.js -i ./configs/input.css -o static/css/style.css --minify

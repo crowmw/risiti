@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/crowmw/risiti/model"
-	"github.com/crowmw/risiti/sanitize"
 	"github.com/crowmw/risiti/service"
 	"github.com/crowmw/risiti/view/home"
 	"github.com/crowmw/risiti/view/signin"
 	"github.com/crowmw/risiti/view/signup"
+	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/validator.v2"
 )
 
 type UserHandler struct {
@@ -37,39 +39,36 @@ func (h *UserHandler) GetSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
-	email, err := sanitize.SanitizeHTML(r.FormValue("email"))
-	if err != nil {
-		OnError(w, err, "This kind of email is not allowed.", http.StatusBadRequest)
+	user := model.User{}
+
+	// sanitize
+	s := bluemonday.UGCPolicy()
+	user.Email, user.Password = s.Sanitize(strings.TrimSpace(r.FormValue("email"))), s.Sanitize(strings.TrimSpace(r.FormValue("password")))
+
+	// validate
+	if err := validator.Validate(user); err != nil {
+		RenderView(w, r, signup.Show(user.Email, fmt.Sprint(err)), "/signup")
 		return
 	}
-	password, err := sanitize.SanitizeHTML(r.FormValue("password"))
-	if err != nil {
-		OnError(w, err, "This kind of password is not allowed.", http.StatusBadRequest)
-		return
-	}
+
 	passwordConfirm := r.FormValue("confirm")
 
 	// Check passwords is the same
-	if password != passwordConfirm {
-		RenderView(w, r, signup.Show(email, "Passwords are not the same."), "/signup")
+	if user.Password != passwordConfirm {
+		RenderView(w, r, signup.Show(user.Email, "Passwords are not the same."), "/signup")
 		return
 	}
 
 	// Check user is already exists
-	_, err = h.UserService.Read(email)
-	if err != sql.ErrNoRows {
-		RenderView(w, r, signup.Show(email, "User "+email+" already exists. Try signin."), "/signup")
+	if _, err := h.UserService.Read(user.Email); err != sql.ErrNoRows {
+		RenderView(w, r, signup.Show(user.Email, "User "+user.Email+" already exists. Try signin."), "/signup")
 		return
 	}
 
 	// Create new user
-	user := model.User{
-		Email:    email,
-		Password: password,
-	}
 	newUser, err := h.UserService.Create(user)
 	if err != nil {
-		RenderView(w, r, signup.Show(email, "Something went wrong while creating user."), "/signup")
+		RenderView(w, r, signup.Show(user.Email, "Something went wrong while creating user."), "/signup")
 		slog.Error(fmt.Sprint(err))
 		return
 	}
@@ -77,7 +76,7 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 	// Signin new user
 	cookie, err := h.AuthService.GenerateCookie(newUser)
 	if err != nil {
-		RenderView(w, r, signup.Show(email, "Something went wrong while signing in new user."), "/signup")
+		RenderView(w, r, signup.Show(user.Email, "Something went wrong while signing in new user."), "/signup")
 		slog.Error(fmt.Sprint(err))
 		return
 	}
@@ -87,12 +86,10 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) PostSignin(w http.ResponseWriter, r *http.Request) {
-	email, err := sanitize.SanitizeHTML(r.FormValue("email"))
-	if err != nil {
-		OnError(w, err, "Invalid email address", http.StatusBadRequest)
-		return
-	}
-	password := r.FormValue("password")
+	// sanitize
+	s := bluemonday.UGCPolicy()
+	email := s.Sanitize(strings.TrimSpace(r.FormValue("email")))
+	password := strings.TrimSpace(r.FormValue("password"))
 
 	// Check user is already exists
 	existedUser, err := h.UserService.Read(email)
@@ -101,11 +98,10 @@ func (h *UserHandler) PostSignin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword(
+	if err = bcrypt.CompareHashAndPassword(
 		[]byte(existedUser.Password),
 		[]byte(password),
-	)
-	if err != nil {
+	); err != nil {
 		RenderView(w, r, signin.Show(email, "Wrong username or password."), "/signin")
 		return
 	}

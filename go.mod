@@ -27,4 +27,5 @@ require (
 	github.com/segmentio/asm v1.2.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
+	gopkg.in/validator.v2 v2.0.1 // indirect
 )
