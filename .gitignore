@@ -38,3 +38,6 @@ view/**/*_templ.go
 # Uploaded receipts
 /data
 !/data/.gitkeep
+
+# env
+.env

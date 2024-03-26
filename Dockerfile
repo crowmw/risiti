@@ -41,7 +41,7 @@ COPY /data ./data
 # Copy built tailwindcss styles
 COPY --from=tailwind-builder /build/style.css ./static/css
 
-EXPOSE 2137
+EXPOSE 80
 
 # Run the server
 ENTRYPOINT ["/risiti"]

@@ -20,19 +20,16 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 )
 
-const (
-	PORT       = ":2137"
-	SECRET_KEY = "secretKey"
-)
-
 func main() {
+	SECRET := os.Getenv("SECRET")
+
 	fileserver := http.FileServer(http.Dir("static"))
 	dataImagesServer := http.FileServer(http.Dir("data"))
 
 	// Services
 	fs := service.NewFileStorage()
 	db := service.NewDB()
-	authService := service.NewAuthService([]byte(SECRET_KEY))
+	authService := service.NewAuthService([]byte(SECRET))
 	receiptService := service.NewReceiptService(db)
 	userService := service.NewUserService(db)
 
@@ -74,7 +71,7 @@ func main() {
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)
 
 	srv := &http.Server{
-		Addr:    PORT,
+		Addr:    ":80",
 		Handler: router,
 	}
 
@@ -89,7 +86,7 @@ func main() {
 		}
 	}()
 
-	slog.Info("🚀 Server started! Listening on port " + PORT)
+	slog.Info("🚀 Server started! Listening on port 80")
 	<-killSig
 
 	slog.Info("🚨 Shutting down server")

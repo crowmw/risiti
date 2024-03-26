@@ -1,6 +1,9 @@
 build:
 	make tailwind-build && make templ-generate && go build -o ./bin/$(APP_NAME) ./cmd/$(APP_NAME)/main.go
 
+run:
+	make build && go run ./bin/main
+
 dev:
 	air
 
@@ -17,10 +20,10 @@ templ-watch:
 	templ generate --watch
 
 docker-build:
-	docker build --no-cache -f Dockerfile -t crowmw/risiti:1.0 . 
+	docker build --no-cache -f Dockerfile -t crowmw/risiti:latest . 
 
 docker-run:
-	docker run -d -p 2137:2137 -v ${HOME}/data:/data crowmw/risiti:latest
+	docker run -d -e SECRET="secretKey" -p 80:80 -v ${HOME}/data:/data crowmw/risiti:latest
 
 docker-push:
 	docker push crowmw/risiti
