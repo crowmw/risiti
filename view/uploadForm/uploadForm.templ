@@ -1,0 +1,38 @@
+package uploadForm
+
+import "fmt"
+import "github.com/crowmw/risiti/view/component"
+
+templ Show(errorMessage string) {
+	@component.Card() {
+		<form hx-encoding="multipart/form-data" hx-post="/receipt" hx-target="#content">
+			<div class="flex flex-col space-y-1.5">
+				<h2 class="text-2xl font-semibold whitespace-nowrap leading-none tracking-tight">Upload receipt</h2>
+				<p class="text-sm text-muted-foreground">Submit a photo of your receipt.</p>
+			</div>
+			<div class="py-6 space-y-4">
+				<div class="space-y-2.5">
+					<label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="file">File</label>
+					<input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="file" name="file" accept="image/*" type="file" required/>
+				</div>
+				@component.TextInput("name", "Name", "text", "Enter the name", "")
+				<div class="space-y-2.5">
+					<label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="date">Date</label>
+					<input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="date" name="date" type="date"/>
+				</div>
+				<div class="space-y-2.5">
+					<label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="date">Description</label>
+					<textarea class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="description" name="description" rows="4"></textarea>
+				</div>
+				<div id="#error-message" class="text-sm text-red-500">
+					{ errorMessage }
+				</div>
+			</div>
+			<div class="flex items-justify pt-0">
+				<button class={ fmt.Sprint(component.BUTTON_CLASS, " justify-center flex-1") } type="submit">
+					Submit
+				</button>
+			</div>
+		</form>
+	}
+}

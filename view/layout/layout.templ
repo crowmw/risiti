@@ -1,0 +1,78 @@
+package layout
+
+import "github.com/crowmw/risiti/view/component"
+import "fmt"
+
+templ head() {
+	<head>
+		<title>risiti</title>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="icon" type="image/x-icon" href="/static/img/favicon.ico"/>
+		<link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png"/>
+		<link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png"/>
+		<link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png"/>
+		<link rel="manifest" href="/static/img/site.webmanifest"/>
+		<link rel="mask-icon" href="/static/img/safari-pinned-tab.svg" color="#5bbad5"/>
+		<meta name="msapplication-TileColor" content="#da532c"/>
+		<meta name="theme-color" content="#ffffff"/>
+		<script src="static/js/htmx.min.js" nonce={ ctx.Value("htmxNonce").(string) }></script>
+		<link rel="stylesheet" href="static/css/style.css" nonce={ ctx.Value("twNonce").(string) }/>
+	</head>
+}
+
+templ footer() {
+	<footer class="text-center text-xs"><small>2024 @ crowmw</small></footer>
+}
+
+templ Show(route string, email interface{}) {
+	<!DOCTYPE html>
+	<html lang="en">
+		@head()
+		<body>
+			@header() {
+				@userButton(email)
+			}
+			<main class="flex-1 flex flex-col justify-center items-center p-4 gap-4 md:gap-8 md:p-6">
+				<div id="content" class="flex flex-col w-full max-w-md space-y-4" hx-swap="innerHTML transition:true" hx-get={ route } hx-trigger="load"></div>
+			</main>
+			@footer()
+		</body>
+	</html>
+}
+
+templ NoHeader(route string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		@head()
+		<body>
+			<main class="flex-1 flex flex-col justify-center items-center p-4 gap-4 md:gap-8 md:p-6">
+				<div id="content" class="flex flex-col w-full max-w-md space-y-4" hx-swap="innerHTML transition:true" hx-get={ route } hx-trigger="load"></div>
+			</main>
+			@footer()
+		</body>
+	</html>
+}
+
+templ header() {
+	<header class="flex items-center justify-center w-full h-14 px-4 border-b bg-gray-100/40">
+		<div class="flex flex-1 max-w-md justify-between">
+			<div class="flex items-center gap-2 hover:cursor-pointer" hx-get="/" hx-push-url="true" hx-target="#content">
+				@component.Logo()
+				<span class="font-semibold">risiti</span>
+			</div>
+			{ children... }
+		</div>
+	</header>
+}
+
+templ userButton(email interface{}) {
+	if email != nil {
+		<select name="user" id="user-select" class="text-sm bg-gray-100/40" hx-get="/signout" hx-trigger="change">
+			<option selected>{ fmt.Sprint(email) }</option>
+			<option>Signout</option>
+		</select>
+	} else {
+		<button hx-get="/signin" hx-push-url="true" hx-target="#content" class="text-sm hover:underline">Sign In</button>
+	}
+}

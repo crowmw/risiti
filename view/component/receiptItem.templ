@@ -1,0 +1,18 @@
+package component
+
+import "github.com/crowmw/risiti/model"
+import "fmt"
+
+templ ReceiptItem(receipt model.Receipt) {
+	<li id="{receipt.ID}" class="rounded-lg border bg-card text-card-foreground shadow-sm" data-v0-t="card">
+		<a href={ templ.SafeURL(fmt.Sprint("/data/", receipt.Filename)) } download>
+			<div class="p-6 flex items-center gap-4">
+				<div class="grid">
+					<h2 class="font-semibold text-sm">{ receipt.Name }</h2>
+					<time class="text-sm text-gray-500" datetime={ receipt.Date.Local().Format("2006-01-02") }>{ receipt.Date.Local().Format("2006-01-02") }</time>
+					<span class="text-sx text-gray-300 text-xs">{ receipt.Description }</span>
+				</div>
+			</div>
+		</a>
+	</li>
+}

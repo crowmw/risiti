@@ -11,43 +11,67 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/crowmw/risiti/internal/filestore"
-	"github.com/crowmw/risiti/internal/handlers"
-	m "github.com/crowmw/risiti/internal/middleware"
-	receiptrepo "github.com/crowmw/risiti/internal/repo"
-	"github.com/crowmw/risiti/internal/store"
+	"github.com/crowmw/risiti/handler"
+	m "github.com/crowmw/risiti/middleware"
+	"github.com/crowmw/risiti/service"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-)
-
-const (
-	PORT = ":2137"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 func main() {
-	filestore := filestore.NewFileStore()
-	store := store.NewStore()
-	receiptRepo := receiptrepo.NewReceiptRepo(receiptrepo.Receipt{}, store)
-	fileserver := http.FileServer(http.Dir("public"))
+	SECRET := os.Getenv("SECRET")
+
+	fileserver := http.FileServer(http.Dir("static"))
+	dataImagesServer := http.FileServer(http.Dir("data"))
+
+	// Services
+	fs := service.NewFileStorage()
+	db := service.NewDB()
+	authService := service.NewAuthService([]byte(SECRET))
+	receiptService := service.NewReceiptService(db)
+	userService := service.NewUserService(db)
+
+	// Handlers
+	basicHandler := handler.NewBasicHandler(receiptService, userService, authService)
+	receiptHandler := handler.NewReceiptHandler(receiptService, fs)
+	userHandler := handler.NewUserHandler(userService, authService)
+
+	// Routes
 	router := chi.NewRouter()
+	router.Use(middleware.Logger, middleware.Recoverer, m.CORS, m.CSPMiddleware, jwtauth.Verifier(authService.JWTAuth))
 
-	router.Use(middleware.Logger, middleware.Recoverer, m.CSPMiddleware)
+	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 
-	router.Handle("/public/*", http.StripPrefix("/public/", fileserver))
+	// Views
+	router.Get("/signin", userHandler.GetSignin)
+	router.Get("/signup", userHandler.GetSignup)
+	router.Get("/", basicHandler.GetHome)
 
-	router.Get("/", handlers.NewGetHomeHandler().ServeHTTP)
-	router.Get("/receipts", handlers.NewGetReceiptsHandler(receiptRepo).ServeHTTP)
-	router.Get("/upload", handlers.NewGetUploadHandler().ServeHTTP)
-	router.Post("/submit", handlers.NewPostSubmitHandler(filestore, receiptRepo).ServeHTTP)
-	router.Post("/search", handlers.NewPostSearchHandler(receiptRepo).ServeHTTP)
+	// Partials
+	router.Post("/user", userHandler.PostUser)
+	router.Post("/signin", userHandler.PostSignin)
+
+	// Protected routes
+	router.Group(func(r chi.Router) {
+		r.Use(m.Authenticator(authService.JWTAuth))
+		r.Handle("/data/*", http.StripPrefix("/data/", dataImagesServer))
+		r.Get("/upload", basicHandler.GetUpload)
+		r.Get("/signout", userHandler.GetSignout)
+
+		// Partials
+		r.Get("/receipts", receiptHandler.GetReceipts)
+		r.Post("/receipt", receiptHandler.PostReceipt)
+		r.Post("/search", receiptHandler.SearchReceipts)
+	})
 
 	killSig := make(chan os.Signal, 1)
 
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)
 
 	srv := &http.Server{
-		Addr:    PORT,
+		Addr:    ":80",
 		Handler: router,
 	}
 
@@ -62,7 +86,7 @@ func main() {
 		}
 	}()
 
-	slog.Info("🚀 Server started! Listening on port " + PORT)
+	slog.Info("🚀 Server started! Listening on port 80")
 	<-killSig
 
 	slog.Info("🚨 Shutting down server")

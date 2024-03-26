@@ -1,0 +1,21 @@
+package signup
+
+import "github.com/crowmw/risiti/view/component"
+import "fmt"
+
+templ Show(email string, errorMessage string) {
+	<h2 class="text-2xl font-semibold whitespace-nowrap leading-none tracking-tight text-center pt-9">Create an account</h2>
+	@component.Card() {
+		<form class="flex flex-col space-y-4" hx-post="/user" hx-push-url="/" hx-target="#content">
+			@component.TextInput("email", "Email", "email", "", email)
+			@component.TextInput("password", "Password", "password", "", "")
+			@component.TextInput("confirm", "Confirm Password", "password", "", "")
+			<div id="#error-message" class="text-sm text-red-500">
+				{ errorMessage }
+			</div>
+			<div class="pt-6 flex flex-1">
+				<button type="submit" class={ fmt.Sprint(component.BUTTON_CLASS, " justify-center flex-1") }>Create account</button>
+			</div>
+		</form>
+	}
+}
