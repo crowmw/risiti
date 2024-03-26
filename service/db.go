@@ -41,13 +41,10 @@ func getConnection(dbName string) (*sql.DB, error) {
 }
 
 func createMigrations(db *sql.DB) error {
-	stmt := `CREATE TABLE IF NOT EXISTS receipt (
+	stmt := `CREATE TABLE IF NOT EXISTS user (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(255) NOT NULL UNIQUE,
-		filename VARCHAR(255) NOT NULL UNIQUE,
-		description VARCHAR(255) NOT NULL,
-		date DATETIME NOT NULL,
-		FOREIGN KEY(created_by) REFERENCES user(id)
+		email VARCHAR(255) NOT NULL UNIQUE,
+		password VARCHAR(255) NOT NULL
 	);`
 
 	_, err := db.Exec(stmt)
@@ -55,10 +52,14 @@ func createMigrations(db *sql.DB) error {
 		return err
 	}
 
-	stmt = `CREATE TABLE IF NOT EXISTS user (
+	stmt = `CREATE TABLE IF NOT EXISTS receipt (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		email VARCHAR(255) NOT NULL UNIQUE,
-		password VARCHAR(255) NOT NULL
+		name VARCHAR(255) NOT NULL UNIQUE,
+		filename VARCHAR(255) NOT NULL UNIQUE,
+		description VARCHAR(255) NOT NULL,
+		date DATETIME NOT NULL,
+		created_by INTEGER,
+		FOREIGN KEY(created_by) REFERENCES user(id)
 	);`
 
 	_, err = db.Exec(stmt)
