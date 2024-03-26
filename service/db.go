@@ -57,9 +57,7 @@ func createMigrations(db *sql.DB) error {
 		name VARCHAR(255) NOT NULL UNIQUE,
 		filename VARCHAR(255) NOT NULL UNIQUE,
 		description VARCHAR(255) NOT NULL,
-		date DATETIME NOT NULL,
-		created_by INTEGER,
-		FOREIGN KEY(created_by) REFERENCES user(id)
+		date DATETIME NOT NULL
 	);`
 
 	_, err = db.Exec(stmt)
