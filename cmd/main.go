@@ -30,42 +30,44 @@ func main() {
 	dataImagesServer := http.FileServer(http.Dir("data"))
 
 	// Services
-	jwt := service.NewAuthService([]byte(SECRET_KEY))
 	fs := service.NewFileStorage()
 	db := service.NewDB()
+	authService := service.NewAuthService([]byte(SECRET_KEY))
 	receiptService := service.NewReceiptService(db)
 	userService := service.NewUserService(db)
 
 	// Handlers
-	basicHandler := handler.NewBasicHandler(receiptService, userService)
+	basicHandler := handler.NewBasicHandler(receiptService, userService, authService)
 	receiptHandler := handler.NewReceiptHandler(receiptService, fs)
-	userHandler := handler.NewUserHandler(userService, jwt)
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	// Routes
 	router := chi.NewRouter()
-	router.Use(middleware.Logger, middleware.Recoverer, m.CORS, m.CSPMiddleware)
+	router.Use(middleware.Logger, middleware.Recoverer, m.CORS, m.CSPMiddleware, jwtauth.Verifier(authService.JWTAuth))
 
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 
 	// Views
 	router.Get("/signin", userHandler.GetSignin)
 	router.Get("/signup", userHandler.GetSignup)
-	router.Get("/signout", userHandler.GetSignout)
+	router.Get("/", basicHandler.GetHome)
+
+	// Partials
+	router.Post("/user", userHandler.PostUser)
+	router.Post("/signin", userHandler.PostSignin)
 
 	// Protected routes
 	router.Group(func(r chi.Router) {
-		r.Use(jwtauth.Verifier(jwt.JWTAuth), m.Authenticator(jwt.JWTAuth))
+		r.Use(m.Authenticator(authService.JWTAuth))
 		r.Handle("/data/*", http.StripPrefix("/data/", dataImagesServer))
 		r.Get("/upload", basicHandler.GetUpload)
-		r.Get("/", basicHandler.GetHome)
-	})
+		r.Get("/signout", userHandler.GetSignout)
 
-	// Partials
-	router.Get("/receipts", receiptHandler.GetReceipts)
-	router.Post("/receipt", receiptHandler.PostReceipt)
-	router.Post("/search", receiptHandler.SearchReceipts)
-	router.Post("/user", userHandler.PostUser)
-	router.Post("/signin", userHandler.PostSignin)
+		// Partials
+		r.Get("/receipts", receiptHandler.GetReceipts)
+		r.Post("/receipt", receiptHandler.PostReceipt)
+		r.Post("/search", receiptHandler.SearchReceipts)
+	})
 
 	killSig := make(chan os.Signal, 1)
 

@@ -6,11 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/crowmw/risiti/model"
 	"github.com/crowmw/risiti/service"
-	"github.com/crowmw/risiti/view/home"
 	"github.com/crowmw/risiti/view/signin"
 	"github.com/crowmw/risiti/view/signup"
 	"github.com/microcosm-cc/bluemonday"
@@ -20,10 +18,10 @@ import (
 
 type UserHandler struct {
 	UserService service.IUserService
-	AuthService service.IAuthService
+	AuthService service.AuthService
 }
 
-func NewUserHandler(us service.IUserService, jwt service.IAuthService) *UserHandler {
+func NewUserHandler(us service.IUserService, jwt service.AuthService) *UserHandler {
 	return &UserHandler{
 		UserService: us,
 		AuthService: jwt,
@@ -35,6 +33,22 @@ func (h *UserHandler) GetSignin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetSignup(w http.ResponseWriter, r *http.Request) {
+	// Check is any user exists in system
+	anyUserExists, err := h.UserService.AnyExists()
+	if err != nil {
+		OnError(w, err, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	if !anyUserExists {
+		RenderView(w, r, signup.Show("", ""), "/signup")
+		return
+	}
+
+	if err := h.AuthService.Authorize(r); err != nil {
+		RenderView(w, r, signin.Show("", ""), "/signin")
+		return
+	}
+
 	RenderView(w, r, signup.Show("", ""), "/signup")
 }
 
@@ -74,13 +88,11 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Signin new user
-	cookie, err := h.AuthService.GenerateCookie(newUser)
+	err = h.AuthService.SignIn(&w, &newUser)
 	if err != nil {
 		RenderView(w, r, signup.Show(user.Email, "Something went wrong while signing in new user."), "/signup")
-		slog.Error(fmt.Sprint(err))
 		return
 	}
-	http.SetCookie(w, &cookie)
 
 	w.Header().Add("HX-Redirect", "/")
 }
@@ -106,26 +118,16 @@ func (h *UserHandler) PostSignin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := h.AuthService.GenerateCookie(existedUser)
+	err = h.AuthService.SignIn(&w, &existedUser)
 	if err != nil {
 		RenderView(w, r, signin.Show(email, "Something went wrong while signing in user."), "/signin")
 		return
 	}
-	http.SetCookie(w, &cookie)
 
 	w.Header().Add("HX-Redirect", "/")
 }
 
 func (h *UserHandler) GetSignout(w http.ResponseWriter, r *http.Request) {
-	c := http.Cookie{
-		Name:    "jwt",
-		Value:   "",
-		Path:    "/",
-		Expires: time.Unix(0, 0),
-
-		HttpOnly: true,
-	}
-
-	http.SetCookie(w, &c)
-	RenderView(w, r, home.Show(), "/")
+	h.AuthService.SignOut(&w)
+	w.Header().Add("HX-Redirect", "/")
 }

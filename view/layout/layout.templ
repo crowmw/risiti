@@ -68,7 +68,10 @@ templ header() {
 
 templ userButton(email interface{}) {
 	if email != nil {
-		<span class="text-sm">{ fmt.Sprint(email) }</span>
+		<select name="user" id="user-select" class="text-sm bg-gray-100/40" hx-get="/signout" hx-trigger="change">
+			<option selected>{ fmt.Sprint(email) }</option>
+			<option>Signout</option>
+		</select>
 	} else {
 		<button hx-get="/signin" hx-push-url="true" hx-target="#content" class="text-sm hover:underline">Sign In</button>
 	}
