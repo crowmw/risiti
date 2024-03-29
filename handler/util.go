@@ -36,7 +36,8 @@ func CreateSlug(input string) string {
 	// Remove special characters
 	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
 	if err != nil {
-		panic(err)
+		slog.Error("Unable to compile regex", err)
+		return ""
 	}
 	processedString := reg.ReplaceAllString(input, " ")
 
