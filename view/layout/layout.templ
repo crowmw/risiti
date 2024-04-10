@@ -68,7 +68,7 @@ templ header() {
 
 templ userButton(email interface{}) {
 	if email != nil {
-		<select name="user" id="user-select" class="text-sm bg-gray-100/40" hx-get="/signout" hx-trigger="change">
+		<select name="user" id="user-select" class="text-sm bg-gray-100/40 appearance-none" hx-get="/signout" hx-trigger="change">
 			<option selected>{ fmt.Sprint(email) }</option>
 			<option>Signout</option>
 		</select>

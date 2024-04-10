@@ -1,6 +1,12 @@
 {
-    "name": "",
-    "short_name": "",
+    "name": "Risiti",
+    "short_name": "Risiti",
+    "start_url": "/",
+    "scope": "/",
+    "description": "Receipts storage application",
+    "theme_color": "#F3F4F6",
+    "background_color": "#F3F4F6",
+    "display": "standalone",
     "icons": [
         {
             "src": "/static/img/android-chrome-192x192.png",
@@ -12,8 +18,5 @@
             "sizes": "512x512",
             "type": "image/png"
         }
-    ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
-    "display": "standalone"
+    ]
 }
