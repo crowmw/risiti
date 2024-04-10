@@ -18,11 +18,11 @@ import (
 )
 
 type ReceiptHandler struct {
-	ReceiptService service.IReceiptService
-	FileStorage    service.IFileStorage
+	ReceiptService service.ReceiptService
+	FileStorage    service.FileStorage
 }
 
-func NewReceiptHandler(s service.IReceiptService, fs service.IFileStorage) *ReceiptHandler {
+func NewReceiptHandler(s service.ReceiptService, fs service.FileStorage) *ReceiptHandler {
 	return &ReceiptHandler{
 		ReceiptService: s,
 		FileStorage:    fs,
@@ -30,7 +30,7 @@ func NewReceiptHandler(s service.IReceiptService, fs service.IFileStorage) *Rece
 }
 
 func (h *ReceiptHandler) GetReceipts(w http.ResponseWriter, r *http.Request) {
-	receipts, err := h.ReceiptService.ReadAll()
+	receipts, err := h.ReceiptService.GetAll()
 	if err != nil {
 		OnError(w, err, "Internal Server Error", http.StatusInternalServerError)
 	}
@@ -42,7 +42,7 @@ func (h *ReceiptHandler) SearchReceipts(w http.ResponseWriter, r *http.Request) 
 	s := bluemonday.UGCPolicy()
 	text := s.Sanitize(r.FormValue("search"))
 
-	receipts, err := h.ReceiptService.ReadByText(text)
+	receipts, err := h.ReceiptService.GetByText(text)
 	if err != nil {
 		OnError(w, err, "Internal Server Error", http.StatusInternalServerError)
 	}
@@ -91,7 +91,7 @@ func (h *ReceiptHandler) PostReceipt(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// name uniqnes check
-	if _, err = h.ReceiptService.ReadByName(receipt.Name); err != sql.ErrNoRows {
+	if _, err = h.ReceiptService.GetByName(receipt.Name); err != sql.ErrNoRows {
 		RenderView(w, r, uploadForm.Show("Name is already taken"), "/upload")
 		return
 	}

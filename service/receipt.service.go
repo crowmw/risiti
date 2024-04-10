@@ -1,98 +1,78 @@
 package service
 
 import (
-	"database/sql"
-	"log/slog"
+	"errors"
+	"strings"
 
 	"github.com/crowmw/risiti/model"
+	"gorm.io/gorm"
 )
 
 const (
 	YYYYMMDD = "2006-01-02"
 )
 
-type IReceiptService interface {
-	Create(receipt model.Receipt) (model.Receipt, error)
-	ReadAll() ([]model.Receipt, error)
-	ReadByText(text string) ([]model.Receipt, error)
-	ReadByName(name string) (model.Receipt, error)
+type ReceiptService interface {
+	Create(receipt model.Receipt) (*model.Receipt, error)
+	GetAll() (*[]model.Receipt, error)
+	GetByText(text string) (*[]model.Receipt, error)
+	GetByName(name string) (*model.Receipt, error)
 }
 
-type ReceiptService struct {
-	DB *sql.DB
+type receiptService struct {
+	db *gorm.DB
 }
 
-func NewReceiptService(db *sql.DB) *ReceiptService {
-	return &ReceiptService{
-		DB: db,
+func DefaultReceiptService(db *gorm.DB) ReceiptService {
+	return &receiptService{
+		db,
 	}
 }
 
-func (s *ReceiptService) Create(receipt model.Receipt) (model.Receipt, error) {
-	stmt := `INSERT INTO receipt(name, description, filename, date) VALUES($1, $2, $3, $4)`
-
-	_, err := s.DB.Exec(stmt, receipt.Name, receipt.Description, receipt.Filename, receipt.Date.Format(YYYYMMDD))
-	if err != nil {
-		slog.Error("Cannot add new receipt to store", err)
-		return model.Receipt{}, err
+func (s *receiptService) Create(receipt model.Receipt) (*model.Receipt, error) {
+	result := s.db.Create(&receipt)
+	if result.Error != nil {
+		return &model.Receipt{}, result.Error
 	}
-
-	// TODO PARSE RESULT
-	return model.Receipt{}, nil
+	return &receipt, nil
 }
 
-func (s *ReceiptService) ReadAll() ([]model.Receipt, error) {
-	query := `SELECT id, name, description, filename, date FROM receipt`
-
-	result, err := s.DB.Query(query)
-	if err != nil {
-		slog.Error("Cannot get all receipts from store", err)
-		return nil, err
-	}
-
-	defer result.Close()
-
+func (s *receiptService) GetAll() (*[]model.Receipt, error) {
 	receipts := []model.Receipt{}
-
-	for result.Next() {
-		receipt := model.Receipt{}
-		result.Scan(&receipt.ID, &receipt.Name, &receipt.Description, &receipt.Filename, &receipt.Date)
-		receipts = append(receipts, receipt)
+	result := s.db.Find(&receipts)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return &receipts, result.Error
 	}
-
-	return receipts, nil
+	return &receipts, nil
 }
 
-func (s *ReceiptService) ReadByName(name string) (model.Receipt, error) {
-	query := "SELECT id, name, description, filename, date FROM receipt WHERE name = '" + name + "'"
-
+func (s *receiptService) GetByName(name string) (*model.Receipt, error) {
 	receipt := model.Receipt{}
-	err := s.DB.QueryRow(query).Scan(&receipt.ID, &receipt.Name, &receipt.Description, &receipt.Filename, &receipt.Date)
-	if err != nil {
-		slog.Error("Cannot get receipts matching "+name+" from store", err)
-		return model.Receipt{}, err
+
+	result := s.db.Find(&receipt, "name = ?", name)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return &model.Receipt{}, result.Error
 	}
 
-	return receipt, nil
+	return &receipt, nil
 }
 
-func (s *ReceiptService) ReadByText(text string) ([]model.Receipt, error) {
-	query := "SELECT id, name, description, filename, date FROM receipt WHERE name like '%" + text + "?%' OR description like '%" + text + "%' OR filename like '%" + text + "%' OR date like '%" + text + "%'"
-
-	result, err := s.DB.Query(query)
-	if err != nil {
-		slog.Error("Cannot get receipts matching "+text+" from store", err)
-		return nil, err
-	}
-
-	defer result.Close()
-
+func (s *receiptService) GetByText(text string) (*[]model.Receipt, error) {
 	receipts := []model.Receipt{}
-	for result.Next() {
-		receipt := model.Receipt{}
-		result.Scan(&receipt.ID, &receipt.Name, &receipt.Description, &receipt.Filename, &receipt.Date)
-		receipts = append(receipts, receipt)
+	searchQuery := strings.TrimSpace(text)
+	result := s.db.Find(&receipts, "name like ? OR description like ? OR filename like ? OR date like ?", searchQuery)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return &receipts, result.Error
 	}
 
-	return receipts, nil
+	return &receipts, nil
 }

@@ -17,11 +17,11 @@ import (
 )
 
 type UserHandler struct {
-	UserService service.IUserService
+	UserService service.UserService
 	AuthService service.AuthService
 }
 
-func NewUserHandler(us service.IUserService, jwt service.AuthService) *UserHandler {
+func NewUserHandler(us service.UserService, jwt service.AuthService) *UserHandler {
 	return &UserHandler{
 		UserService: us,
 		AuthService: jwt,
@@ -34,7 +34,7 @@ func (h *UserHandler) GetSignin(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) GetSignup(w http.ResponseWriter, r *http.Request) {
 	// Check is any user exists in system
-	anyUserExists, err := h.UserService.AnyExists()
+	anyUserExists, err := h.UserService.GetAny()
 	if err != nil {
 		OnError(w, err, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -74,7 +74,7 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check user is already exists
-	if _, err := h.UserService.Read(user.Email); err != sql.ErrNoRows {
+	if _, err := h.UserService.GetByEmail(user.Email); err != sql.ErrNoRows {
 		RenderView(w, r, signup.Show(user.Email, "User "+user.Email+" already exists. Try signin."), "/signup")
 		return
 	}
@@ -88,7 +88,7 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Signin new user
-	err = h.AuthService.SignIn(&w, &newUser)
+	err = h.AuthService.SignIn(&w, newUser)
 	if err != nil {
 		RenderView(w, r, signup.Show(user.Email, "Something went wrong while signing in new user."), "/signup")
 		return
@@ -104,7 +104,7 @@ func (h *UserHandler) PostSignin(w http.ResponseWriter, r *http.Request) {
 	password := strings.TrimSpace(r.FormValue("password"))
 
 	// Check user is already exists
-	existedUser, err := h.UserService.Read(email)
+	existedUser, err := h.UserService.GetByEmail(email)
 	if err != nil {
 		RenderView(w, r, signin.Show(email, "Wrong username or password."), "/signin")
 		return
@@ -118,7 +118,7 @@ func (h *UserHandler) PostSignin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.AuthService.SignIn(&w, &existedUser)
+	err = h.AuthService.SignIn(&w, existedUser)
 	if err != nil {
 		RenderView(w, r, signin.Show(email, "Something went wrong while signing in user."), "/signin")
 		return

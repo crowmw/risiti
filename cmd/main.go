@@ -26,11 +26,11 @@ func main() {
 	dataImagesServer := http.FileServer(http.Dir("data"))
 
 	// Services
-	fs := service.NewFileStorage()
-	db := service.NewDB()
-	authService := service.NewAuthService([]byte(SECRET))
-	receiptService := service.NewReceiptService(db)
-	userService := service.NewUserService(db)
+	fs := service.DefaultFileStorage()
+	db := service.DefaultDB()
+	authService := service.DefaultAuthService([]byte(SECRET))
+	receiptService := service.DefaultReceiptService(db)
+	userService := service.DefaultUserService(db)
 
 	// Handlers
 	basicHandler := handler.NewBasicHandler(receiptService, userService, authService)

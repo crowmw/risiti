@@ -11,12 +11,12 @@ import (
 )
 
 type BasicHandler struct {
-	ReceiptService service.IReceiptService
-	UserService    service.IUserService
+	ReceiptService service.ReceiptService
+	UserService    service.UserService
 	AuthService    service.AuthService
 }
 
-func NewBasicHandler(s service.IReceiptService, u service.IUserService, a service.AuthService) *BasicHandler {
+func NewBasicHandler(s service.ReceiptService, u service.UserService, a service.AuthService) *BasicHandler {
 	return &BasicHandler{
 		ReceiptService: s,
 		UserService:    u,
@@ -26,7 +26,7 @@ func NewBasicHandler(s service.IReceiptService, u service.IUserService, a servic
 
 func (h *BasicHandler) GetHome(w http.ResponseWriter, r *http.Request) {
 	// Check is any user exists in system
-	anyUserExists, err := h.UserService.AnyExists()
+	anyUserExists, err := h.UserService.GetAny()
 	if err != nil {
 		OnError(w, err, "Internal Server Error", http.StatusInternalServerError)
 		return

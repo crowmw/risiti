@@ -1,95 +1,66 @@
 package service
 
 import (
-	"database/sql"
+	"errors"
 
 	"github.com/crowmw/risiti/model"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-type IUserService interface {
-	Create(user model.User) (model.User, error)
-	Read(email string) (model.User, error)
-	AnyExists() (bool, error)
+type UserService interface {
+	Create(user model.User) (*model.User, error)
+	GetByEmail(email string) (*model.User, error)
+	GetAny() (bool, error)
 }
 
-type UserService struct {
-	DB *sql.DB
+type userService struct {
+	db *gorm.DB
 }
 
-func NewUserService(db *sql.DB) *UserService {
-	return &UserService{
-		DB: db,
+func DefaultUserService(db *gorm.DB) UserService {
+	return &userService{
+		db,
 	}
 }
 
-func (s *UserService) Create(user model.User) (model.User, error) {
+func (s *userService) Create(user model.User) (*model.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return model.User{}, err
+		return &model.User{}, err
 	}
 
-	query := `INSERT INTO user(email, password) VALUES($1, $2) RETURNING *`
-
-	stmt, err := s.DB.Prepare(query)
-	if err != nil {
-		return model.User{}, err
+	newUser := model.User{
+		Email:    user.Email,
+		Password: string(hashedPassword),
 	}
 
-	defer stmt.Close()
-
-	newUser := model.User{}
-	err = stmt.QueryRow(user.Email, string(hashedPassword)).Scan(
-		&newUser.ID,
-		&newUser.Email,
-		&newUser.Password,
-	)
-	if err != nil {
-		return model.User{}, err
+	result := s.db.Create(&newUser)
+	if result.Error != nil {
+		return &model.User{}, nil
 	}
 
-	return newUser, nil
+	return &newUser, nil
 }
 
-func (s *UserService) Read(email string) (model.User, error) {
-	query := `SELECT * FROM user WHERE email=$1`
-
-	stmt, err := s.DB.Prepare(query)
-	if err != nil {
-		return model.User{}, nil
-	}
-
-	defer stmt.Close()
-
+func (s *userService) GetByEmail(email string) (*model.User, error) {
 	user := model.User{}
-	err = stmt.QueryRow(email).Scan(
-		&user.ID,
-		&user.Email,
-		&user.Password,
-	)
-
-	if err != nil {
-		return model.User{}, err
+	result := s.db.First(&user, "email = ?", email)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return &model.User{}, result.Error
 	}
 
-	return user, nil
+	return &user, nil
 }
 
-func (s *UserService) AnyExists() (bool, error) {
-	query := `SELECT EXISTS (SELECT 1 FROM user) AS isEmpty`
-
-	stmt, err := s.DB.Prepare(query)
-	if err != nil {
+func (s *userService) GetAny() (bool, error) {
+	user := model.User{}
+	result := s.db.Take(&user)
+	if result.Error != nil {
 		return false, nil
 	}
-
-	defer stmt.Close()
-
-	var isEmpty bool
-	err = stmt.QueryRow().Scan(&isEmpty)
-	if err != nil {
-		return false, err
-	}
-
-	return isEmpty, nil
+	return true, nil
 }

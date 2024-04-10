@@ -12,17 +12,17 @@ const (
 	RECEIPTS_PATH = "./data/"
 )
 
-type IFileStorage interface {
+type FileStorage interface {
 	SaveFile(file multipart.File, filename string) error
 }
 
-type FileStorage struct{}
+type fileStorage struct{}
 
-func NewFileStorage() *FileStorage {
-	return &FileStorage{}
+func DefaultFileStorage() FileStorage {
+	return &fileStorage{}
 }
 
-func (fs *FileStorage) SaveFile(file multipart.File, filename string) error {
+func (fs *fileStorage) SaveFile(file multipart.File, filename string) error {
 	defer file.Close()
 	dst, err := os.Create(fmt.Sprintf("%s%s", RECEIPTS_PATH, filename))
 	if err != nil {

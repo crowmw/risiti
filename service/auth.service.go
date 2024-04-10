@@ -23,7 +23,7 @@ type authService struct {
 	secretKey []byte
 }
 
-func NewAuthService(secretKey []byte) AuthService {
+func DefaultAuthService(secretKey []byte) AuthService {
 	jwtAuth := jwtauth.New("HS256", []byte(secretKey), nil)
 	return &authService{
 		JWTAuth:   jwtAuth,

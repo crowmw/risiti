@@ -2,9 +2,9 @@ package component
 
 import "github.com/crowmw/risiti/model"
 
-templ ReceiptsList(receipts []model.Receipt) {
+templ ReceiptsList(receipts *[]model.Receipt) {
 	<ul id="receipts-list" class="flex flex-col gap-4">
-		for _, receipt := range receipts {
+		for _, receipt := range *receipts {
 			@ReceiptItem(receipt)
 		}
 	</ul>

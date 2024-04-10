@@ -8,11 +8,16 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/jwtauth/v5 v5.3.1
 	github.com/lestrrat-go/jwx/v2 v2.0.20
-	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.21.0
 	gopkg.in/validator.v2 v2.0.1
+)
+
+require (
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 )
 
 require (
@@ -32,4 +37,6 @@ require (
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gorm.io/driver/sqlite v1.5.5
+	gorm.io/gorm v1.25.9
 )
