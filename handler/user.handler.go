@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -74,7 +73,7 @@ func (h *UserHandler) PostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check user is already exists
-	if _, err := h.UserService.GetByEmail(user.Email); err != sql.ErrNoRows {
+	if _, err := h.UserService.GetByEmail(user.Email); err != nil {
 		RenderView(w, r, signup.Show(user.Email, "User "+user.Email+" already exists. Try signin."), "/signup")
 		return
 	}

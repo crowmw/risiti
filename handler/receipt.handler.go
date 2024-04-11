@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -18,19 +17,19 @@ import (
 )
 
 type ReceiptHandler struct {
-	ReceiptService service.ReceiptService
-	FileStorage    service.FileStorage
+	receiptService service.ReceiptService
+	fileStorage    service.FileStorage
 }
 
 func NewReceiptHandler(s service.ReceiptService, fs service.FileStorage) *ReceiptHandler {
 	return &ReceiptHandler{
-		ReceiptService: s,
-		FileStorage:    fs,
+		receiptService: s,
+		fileStorage:    fs,
 	}
 }
 
 func (h *ReceiptHandler) GetReceipts(w http.ResponseWriter, r *http.Request) {
-	receipts, err := h.ReceiptService.GetAll()
+	receipts, err := h.receiptService.GetAll()
 	if err != nil {
 		OnError(w, err, "Internal Server Error", http.StatusInternalServerError)
 	}
@@ -42,7 +41,7 @@ func (h *ReceiptHandler) SearchReceipts(w http.ResponseWriter, r *http.Request) 
 	s := bluemonday.UGCPolicy()
 	text := s.Sanitize(r.FormValue("search"))
 
-	receipts, err := h.ReceiptService.GetByText(text)
+	receipts, err := h.receiptService.GetByText(text)
 	if err != nil {
 		OnError(w, err, "Internal Server Error", http.StatusInternalServerError)
 	}
@@ -91,24 +90,24 @@ func (h *ReceiptHandler) PostReceipt(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// name uniqnes check
-	if _, err = h.ReceiptService.GetByName(receipt.Name); err != sql.ErrNoRows {
+	if _, err = h.receiptService.GetByName(receipt.Name); err != nil {
 		RenderView(w, r, uploadForm.Show("Name is already taken"), "/upload")
 		return
 	}
 
 	// save file to filestorage
-	err = h.FileStorage.SaveFile(file, filename)
+	err = h.fileStorage.SaveFile(file, filename)
 	if err != nil {
 		slog.Error("Cannot save file", err)
 		return
 	}
 
 	// create receipt in db
-	_, err = h.ReceiptService.Create(receipt)
+	_, err = h.receiptService.Create(receipt)
 	if err != nil {
 		slog.Error("Cannot add receipt to storage", err)
 		return
 	}
 
-	r.Header.Add("HX-Redirect", "/")
+	w.Header().Add("HX-Redirect", "/")
 }

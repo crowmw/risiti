@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 func main() {
@@ -39,7 +40,7 @@ func main() {
 
 	// Routes
 	router := chi.NewRouter()
-	router.Use(middleware.Logger, middleware.Recoverer, m.CORS, m.CSPMiddleware)
+	router.Use(middleware.Logger, middleware.Recoverer, m.CORS, m.CSPMiddleware, jwtauth.Verifier(authService.JWTAuth))
 
 	router.Handle("/static/*", http.StripPrefix("/static/", fileserver))
 
@@ -54,7 +55,7 @@ func main() {
 
 	// Protected routes
 	router.Group(func(r chi.Router) {
-		// r.Use(m.Authenticator(authService))
+		r.Use(m.Authenticator(authService.JWTAuth))
 		r.Handle("/data/*", http.StripPrefix("/data/", dataImagesServer))
 		r.Get("/upload", basicHandler.GetUpload)
 		r.Get("/signout", userHandler.GetSignout)

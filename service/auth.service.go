@@ -12,26 +12,20 @@ const (
 	TOKEN_EXPIRATION_TIME = 24 * time.Hour
 )
 
-type AuthService interface {
-	SignIn(w *http.ResponseWriter, user *model.User) error
-	SignOut(w *http.ResponseWriter)
-	Authorize(r *http.Request) error
-}
-
-type authService struct {
+type AuthService struct {
 	JWTAuth   *jwtauth.JWTAuth
 	secretKey []byte
 }
 
 func DefaultAuthService(secretKey []byte) AuthService {
-	jwtAuth := jwtauth.New("HS256", []byte(secretKey), nil)
-	return &authService{
-		JWTAuth:   jwtAuth,
-		secretKey: secretKey,
+	JWTAuth := jwtauth.New("HS256", []byte(secretKey), nil)
+	return AuthService{
+		JWTAuth,
+		secretKey,
 	}
 }
 
-func (a *authService) generateToken(user model.User) (string, error) {
+func (a *AuthService) generateToken(user model.User) (string, error) {
 	payload := map[string]interface{}{
 		"email": user.Email,
 		"id":    user.ID,
@@ -39,7 +33,6 @@ func (a *authService) generateToken(user model.User) (string, error) {
 	}
 
 	_, tokenString, err := a.JWTAuth.Encode(payload)
-
 	if err != nil {
 		return "", err
 	}
@@ -47,7 +40,7 @@ func (a *authService) generateToken(user model.User) (string, error) {
 	return tokenString, nil
 }
 
-func (a *authService) generateCookie(user model.User) (http.Cookie, error) {
+func (a *AuthService) generateCookie(user model.User) (http.Cookie, error) {
 	token, err := a.generateToken(user)
 	if err != nil {
 		return http.Cookie{}, err
@@ -59,7 +52,7 @@ func (a *authService) generateCookie(user model.User) (http.Cookie, error) {
 	return cookie, nil
 }
 
-func (a *authService) SignIn(w *http.ResponseWriter, user *model.User) error {
+func (a *AuthService) SignIn(w *http.ResponseWriter, user *model.User) error {
 	cookie, err := a.generateCookie(*user)
 	if err != nil {
 		return err
@@ -68,7 +61,7 @@ func (a *authService) SignIn(w *http.ResponseWriter, user *model.User) error {
 	return nil
 }
 
-func (a *authService) SignOut(w *http.ResponseWriter) {
+func (a *AuthService) SignOut(w *http.ResponseWriter) {
 	c := http.Cookie{
 		Name:     "jwt",
 		Value:    "",
@@ -80,7 +73,7 @@ func (a *authService) SignOut(w *http.ResponseWriter) {
 	http.SetCookie(*w, &c)
 }
 
-func (a *authService) Authorize(r *http.Request) error {
+func (a *AuthService) Authorize(r *http.Request) error {
 	_, err := jwtauth.VerifyRequest(a.JWTAuth, r, jwtauth.TokenFromCookie)
 	if err != nil {
 		return err
